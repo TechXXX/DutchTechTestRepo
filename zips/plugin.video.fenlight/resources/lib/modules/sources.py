@@ -17,6 +17,7 @@ get_icon, notification, sleep, xbmc_monitor = kodi_utils.get_icon, kodi_utils.no
 select_dialog, confirm_dialog, close_all_dialog = kodi_utils.select_dialog, kodi_utils.confirm_dialog, kodi_utils.close_all_dialog
 show_busy_dialog, hide_busy_dialog, xbmc_player = kodi_utils.show_busy_dialog, kodi_utils.hide_busy_dialog, kodi_utils.xbmc_player
 get_property, set_property, clear_property = kodi_utils.get_property, kodi_utils.set_property, kodi_utils.clear_property
+jsonrpc_get_system_setting = kodi_utils.jsonrpc_get_system_setting
 auto_play, active_internal_scrapers, provider_sort_ranks, audio_filters = settings.auto_play, settings.active_internal_scrapers, settings.provider_sort_ranks, settings.audio_filters
 check_prescrape_sources, external_scraper_info, auto_resume = settings.check_prescrape_sources, settings.external_scraper_info, settings.auto_resume
 store_resolved_to_cloud, source_folders_directory, watched_indicators = settings.store_resolved_to_cloud, settings.source_folders_directory, settings.watched_indicators
@@ -43,6 +44,8 @@ default_internal_scrapers = ('easynews', 'rd_cloud', 'pm_cloud', 'ad_cloud', 'oc
 main_line = '%s[CR]%s[CR]%s'
 int_window_prop = 'fenlight.internal_results.%s'
 scraper_timeout = 25
+a4k_subtitles_addon_path = 'special://home/addons/service.subtitles.a4ksubtitles'
+subtitle_autoplay_probe_limit = 10
 filter_keys = {'hevc': '[B]HEVC[/B]', '3d': '[B]3D[/B]', 'hdr': '[B]HDR[/B]', 'dv': '[B]D/VISION[/B]', 'av1': '[B]AV1[/B]', 'enhanced_upscaled': '[B]AI ENHANCED/UPSCALED[/B]'}
 preference_values = {0:100, 1:50, 2:20, 3:10, 4:5, 5:2}
 
@@ -58,6 +61,7 @@ class Sources():
 		self.ext_name, self.ext_folder, self.provider_defaults, self.ext_sources = '', '', [], None
 		self.progress_dialog, self.progress_thread = None, None
 		self.playing_filename = ''
+		self.a4k_subtitles_api, self.a4k_subtitles_checked, self.subtitle_probe_cache = None, False, {}
 		self.count_tuple = (('sources_4k', '4K', self._quality_length), ('sources_1080p', '1080p', self._quality_length), ('sources_720p', '720p', self._quality_length),
 							('sources_sd', '', self._quality_length_sd), ('sources_total', '', self._quality_length_final))
 
@@ -193,6 +197,7 @@ class Sources():
 			for file_type in filter_keys: results = self.special_filter(results, file_type)
 		results = self.sort_preferred_autoplay(results)
 		results = self.sort_first(results)
+		results = self.sort_subtitle_ready_autoplay(results)
 		return results
 
 	def sort_results(self, results):
@@ -263,6 +268,69 @@ class Sources():
 						for item in preference_results], key=lambda k: k['pref_includes'], reverse=True)
 			return preference_results + results
 		except: return results
+
+	def sort_subtitle_ready_autoplay(self, results):
+		if not self.autoplay or not results: return results
+		search_params = self._a4k_search_params()
+		if not search_params: return results
+		a4k_api = self._get_a4k_subtitles_api()
+		if not a4k_api: return results
+		try:
+			probe_limit = min(len(results), subtitle_autoplay_probe_limit)
+			probed_results = []
+			for item in results[:probe_limit]:
+				item = dict(item, **{'subtitle_hit': self._a4k_result_available(a4k_api, search_params, item)})
+				probed_results.append(item)
+			subtitle_matches = [i for i in probed_results if i.get('subtitle_hit')]
+			if not subtitle_matches: return results
+			no_subtitle_matches = [i for i in probed_results if not i.get('subtitle_hit')]
+			return subtitle_matches + no_subtitle_matches + results[probe_limit:]
+		except: return results
+
+	def _get_a4k_subtitles_api(self):
+		if self.a4k_subtitles_checked: return self.a4k_subtitles_api
+		self.a4k_subtitles_checked = True
+		try:
+			append_module_to_syspath(a4k_subtitles_addon_path)
+			self.a4k_subtitles_api = manual_function_import('a4kSubtitles.api', 'A4kSubtitlesApi')()
+		except: self.a4k_subtitles_api = None
+		return self.a4k_subtitles_api
+
+	def _a4k_search_params(self):
+		try:
+			languages = jsonrpc_get_system_setting('subtitles.languages', [])
+			preferred_language = jsonrpc_get_system_setting('locale.subtitlelanguage', 'default')
+			if isinstance(languages, str): languages = [languages]
+			languages = [i for i in languages if i not in (None, '', 'none')]
+			if not languages and preferred_language not in (None, '', 'none'): languages = [preferred_language]
+			if not languages: return None
+			if preferred_language in (None, '', 'none'): preferred_language = languages[0]
+			return {'action': 'search', 'languages': ','.join(languages), 'preferredlanguage': preferred_language}
+		except: return None
+
+	def _a4k_result_available(self, a4k_api, search_params, item):
+		cache_key = '%s|%s|%s|%s|%s' % (self.media_type, self.meta.get('imdb_id', ''), self.meta.get('season', ''), self.meta.get('episode', ''), item.get('name', item.get('display_name', '')))
+		if cache_key in self.subtitle_probe_cache: return self.subtitle_probe_cache[cache_key]
+		try:
+			results = a4k_api.search(search_params, video_meta=self._a4k_video_meta(item))
+			has_result = len(results) > 0
+		except: has_result = False
+		self.subtitle_probe_cache[cache_key] = has_result
+		return has_result
+
+	def _a4k_video_meta(self, item):
+		release_name = item.get('name', '') or item.get('display_name', '') or ''
+		if '.' not in release_name: release_name = '%s.mkv' % release_name
+		meta = {'version': kodi_utils.get_infolabel('System.BuildVersionCode') or '20.0.0', 'year': str(self.meta.get('year', '') or ''),
+				'season': str(self.meta.get('season', '') or ''), 'episode': str(self.meta.get('episode', '') or ''), 'tvshow': '', 'title': '', '_title': '',
+				'imdb_id': self.meta.get('imdb_id', '') or '', 'url': item.get('url', '') or '', 'filename': release_name, 'filesize': '', 'filehash': ''}
+		if self.media_type == 'movie':
+			title = self.meta.get('original_title') or self.meta.get('title') or ''
+			meta.update({'title': title, '_title': title})
+		else:
+			meta.update({'tvshow': self.meta.get('title') or '', 'title': self.meta.get('original_title') or self.meta.get('ep_name') or '',
+						'_title': self.meta.get('ep_name') or self.meta.get('title') or ''})
+		return meta
 
 	def prepare_internal_scrapers(self):
 		if self.active_external and len(self.active_internal_scrapers) == 1: return
