@@ -50,6 +50,8 @@ class A4kSubtitlesApi(object):
         player = self.core.kodi.xbmc.Player()
         player_get_playing_file_restore = None
         video_get_filename_restore = None
+        file_size_restore = None
+        file_hash_restore = None
         try:
             default_ = player.getPlayingFile
             player.getPlayingFile = lambda: meta.get('filename', '')
@@ -60,11 +62,17 @@ class A4kSubtitlesApi(object):
             video_get_filename_restore = getattr(self.core.video, '__get_filename')
             setattr(self.core.video, '__get_filename', lambda title: meta.get('filename', '') or title)
 
-        default__ = self.core.kodi.xbmcvfs.File.size
-        self.core.kodi.xbmcvfs.File.size = lambda: meta.get('filesize', '')
+        try:
+            file_size_restore = self.core.kodi.xbmcvfs.File.size
+            self.core.kodi.xbmcvfs.File.size = lambda: meta.get('filesize', '')
+        except (AttributeError, TypeError):
+            file_size_restore = None
 
-        default___ = self.core.kodi.xbmcvfs.File.hash
-        self.core.kodi.xbmcvfs.File.hash = lambda: meta.get('filehash', '')
+        try:
+            file_hash_restore = self.core.kodi.xbmcvfs.File.hash
+            self.core.kodi.xbmcvfs.File.hash = lambda: meta.get('filehash', '')
+        except (AttributeError, TypeError):
+            file_hash_restore = None
 
         def restore():
             self.core.kodi.xbmc.getInfoLabel = default
@@ -75,8 +83,16 @@ class A4kSubtitlesApi(object):
                     pass
             if video_get_filename_restore is not None:
                 setattr(self.core.video, '__get_filename', video_get_filename_restore)
-            self.core.kodi.xbmcvfs.File.size = default__
-            self.core.kodi.xbmcvfs.File.hash = default___
+            if file_size_restore is not None:
+                try:
+                    self.core.kodi.xbmcvfs.File.size = file_size_restore
+                except (AttributeError, TypeError):
+                    pass
+            if file_hash_restore is not None:
+                try:
+                    self.core.kodi.xbmcvfs.File.hash = file_hash_restore
+                except (AttributeError, TypeError):
+                    pass
         return restore
 
     def mock_settings(self, settings):

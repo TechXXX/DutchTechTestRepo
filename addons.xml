@@ -151,7 +151,7 @@ v0.2.3
 - Add a Kodi settings action button to start Google Drive pairing directly from the add-on UI</news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles" name="a4kSubtitles" version="3.23.3" provider-name="Unknown">
+    <addon id="service.subtitles.a4ksubtitles" name="a4kSubtitles" version="3.23.4" provider-name="Unknown">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -176,6 +176,9 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
                 <screenshot>screenshot-03.png</screenshot>
             </assets>
             <news>
+[v3.23.4]:
+  * Skip immutable xbmcvfs.File method overrides in live Kodi so API-mode subtitle probing can continue without mocked size/hash methods.
+
 [v3.23.3]:
   * Fix API-mode filename mocking fallback for live Kodi by avoiding Python name-mangling on the internal video helper.
 
