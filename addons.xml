@@ -151,7 +151,7 @@ v0.2.3
 - Add a Kodi settings action button to start Google Drive pairing directly from the add-on UI</news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles" name="a4kSubtitles" version="3.23.6" provider-name="Unknown">
+    <addon id="service.subtitles.a4ksubtitles" name="a4kSubtitles" version="3.23.7" provider-name="Unknown">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -178,6 +178,9 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
             <news>
 [v3.23.6]:
   * Add targeted search pipeline logging for API-mode pre-play debugging, including raw service results and each prepare/filter stage.
+
+[v3.23.7]:
+  * Relax OpenSubtitles TV episode IMDb filtering in API-mode pre-play searches so valid episode subtitle results survive to Fenlight matching.
 
 [v3.23.5]:
   * Mock the full video metadata entrypoint in API mode so subtitle probing can run before playback without Kodi player state.

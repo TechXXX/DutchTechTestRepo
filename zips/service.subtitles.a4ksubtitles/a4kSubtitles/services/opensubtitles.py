@@ -151,7 +151,17 @@ def parse_search_response(core, service_name, meta, response):
     def map_result(result):
         result = result['attributes']
         imdb_id = result.get('feature_details', {}).get('imdb_id', None)
-        if len(result['files']) == 0 or imdb_id is not None and imdb_id != meta.imdb_id_as_int:
+        if len(result['files']) == 0:
+            return None
+
+        tv_show_imdb_id_as_int = getattr(meta, 'tv_show_imdb_id_as_int', 0)
+        imdb_matches = imdb_id is None or imdb_id in (meta.imdb_id_as_int, tv_show_imdb_id_as_int)
+        # OpenSubtitles episode searches can return valid episode subtitles keyed to a
+        # different IMDb entity than the pre-play mocked metadata. Keep TV episode
+        # candidates and let the later filename-based ranking decide.
+        if not meta.is_tvshow and not imdb_matches:
+            return None
+        if meta.is_tvshow and imdb_id is not None and not imdb_matches and not (meta.season and meta.episode):
             return None
 
         filename = result['files'][0]['file_name']
@@ -175,7 +185,7 @@ def parse_search_response(core, service_name, meta, response):
             }
         }
 
-    return list(map(map_result, results['data']))
+    return [item for item in map(map_result, results['data']) if item]
 
 def build_download_request(core, service_name, args):
     def download_request(response):
