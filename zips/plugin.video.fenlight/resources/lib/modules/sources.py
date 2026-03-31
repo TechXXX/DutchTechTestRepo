@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import time
+import traceback
 from threading import Thread
 import itertools
 from windows.base_window import open_window, create_window
@@ -331,7 +332,7 @@ class Sources():
 			logger('Fen Light', 'Subtitle probe checked source=%s | match=%s | subtitles=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), has_result, ' | '.join(subtitle_names) or 'None'))
 		except:
 			has_result, subtitle_names = False, []
-			logger('Fen Light', 'Subtitle probe failed for source=%s' % item.get('name', item.get('display_name', 'UNKNOWN')))
+			logger('Fen Light', 'Subtitle probe failed for source=%s | error=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), traceback.format_exc().replace('\n', ' | ')))
 		self.subtitle_probe_cache[cache_key] = (has_result, subtitle_names)
 		return self.subtitle_probe_cache[cache_key]
 
