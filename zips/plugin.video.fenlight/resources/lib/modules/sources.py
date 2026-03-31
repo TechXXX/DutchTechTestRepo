@@ -11,7 +11,7 @@ from modules import debrid, kodi_utils, settings, metadata, watched_status
 from modules.player import FenLightPlayer
 from modules.source_utils import get_cache_expiry, make_alias_dict
 from modules.utils import clean_file_name, string_to_float, safe_string, remove_accents, get_datetime, append_module_to_syspath, manual_function_import, manual_module_import
-# logger = kodi_utils.logger
+logger = kodi_utils.logger
 
 get_icon, notification, sleep, xbmc_monitor = kodi_utils.get_icon, kodi_utils.notification, kodi_utils.sleep, kodi_utils.xbmc_monitor
 select_dialog, confirm_dialog, close_all_dialog = kodi_utils.select_dialog, kodi_utils.confirm_dialog, kodi_utils.close_all_dialog
@@ -272,17 +272,26 @@ class Sources():
 	def sort_subtitle_ready_autoplay(self, results):
 		if not self.autoplay or not results: return results
 		search_params = self._a4k_search_params()
-		if not search_params: return results
+		if not search_params:
+			logger('Fen Light', 'Subtitle probe skipped: no subtitle language settings available')
+			return results
 		a4k_api = self._get_a4k_subtitles_api()
-		if not a4k_api: return results
+		if not a4k_api:
+			logger('Fen Light', 'Subtitle probe skipped: a4kSubtitles API unavailable')
+			return results
 		try:
 			probe_limit = min(len(results), subtitle_autoplay_probe_limit)
+			logger('Fen Light', 'Subtitle probe starting for %s of %s autoplay results' % (probe_limit, len(results)))
 			probed_results = []
 			for item in results[:probe_limit]:
-				item = dict(item, **{'subtitle_hit': self._a4k_result_available(a4k_api, search_params, item)})
+				subtitle_hit, subtitle_names = self._a4k_result_available(a4k_api, search_params, item)
+				item = dict(item, **{'subtitle_hit': subtitle_hit, 'subtitle_names': subtitle_names})
 				probed_results.append(item)
 			subtitle_matches = [i for i in probed_results if i.get('subtitle_hit')]
-			if not subtitle_matches: return results
+			if not subtitle_matches:
+				logger('Fen Light', 'Subtitle probe found no subtitle-backed autoplay sources')
+				return results
+			logger('Fen Light', 'Subtitle probe promoted %s source(s). First promoted source: %s' % (len(subtitle_matches), subtitle_matches[0].get('name', subtitle_matches[0].get('display_name', 'UNKNOWN'))))
 			no_subtitle_matches = [i for i in probed_results if not i.get('subtitle_hit')]
 			return subtitle_matches + no_subtitle_matches + results[probe_limit:]
 		except: return results
@@ -293,6 +302,7 @@ class Sources():
 		try:
 			append_module_to_syspath(a4k_subtitles_addon_path)
 			self.a4k_subtitles_api = manual_function_import('a4kSubtitles.api', 'A4kSubtitlesApi')()
+			logger('Fen Light', 'Subtitle probe connected to a4kSubtitles API')
 		except: self.a4k_subtitles_api = None
 		return self.a4k_subtitles_api
 
@@ -310,13 +320,20 @@ class Sources():
 
 	def _a4k_result_available(self, a4k_api, search_params, item):
 		cache_key = '%s|%s|%s|%s|%s' % (self.media_type, self.meta.get('imdb_id', ''), self.meta.get('season', ''), self.meta.get('episode', ''), item.get('name', item.get('display_name', '')))
-		if cache_key in self.subtitle_probe_cache: return self.subtitle_probe_cache[cache_key]
+		if cache_key in self.subtitle_probe_cache:
+			cached_hit, cached_names = self.subtitle_probe_cache[cache_key]
+			logger('Fen Light', 'Subtitle probe cache hit for %s | match=%s | subtitles=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), cached_hit, ' | '.join(cached_names[:3]) or 'None'))
+			return self.subtitle_probe_cache[cache_key]
 		try:
 			results = a4k_api.search(search_params, video_meta=self._a4k_video_meta(item))
+			subtitle_names = [i.get('name', '') for i in results[:3]]
 			has_result = len(results) > 0
-		except: has_result = False
-		self.subtitle_probe_cache[cache_key] = has_result
-		return has_result
+			logger('Fen Light', 'Subtitle probe checked source=%s | match=%s | subtitles=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), has_result, ' | '.join(subtitle_names) or 'None'))
+		except:
+			has_result, subtitle_names = False, []
+			logger('Fen Light', 'Subtitle probe failed for source=%s' % item.get('name', item.get('display_name', 'UNKNOWN')))
+		self.subtitle_probe_cache[cache_key] = (has_result, subtitle_names)
+		return self.subtitle_probe_cache[cache_key]
 
 	def _a4k_video_meta(self, item):
 		release_name = item.get('name', '') or item.get('display_name', '') or ''

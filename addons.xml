@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-    <addon id="plugin.video.fenlight" name="Fen Light" provider-name="Tikipeter" version="2.0.08">
+    <addon id="plugin.video.fenlight" name="Fen Light" provider-name="Tikipeter" version="2.0.09">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -514,7 +514,7 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
         </news>
         </extension>
     </addon>
-    <addon id="repository.dutchtechtestrepo" name="DutchTechTestRepo" provider-name="DutchTech" version="1.0.1">
+    <addon id="repository.dutchtechtestrepo" name="DutchTechTestRepo" provider-name="DutchTech" version="1.0.2">
         <extension point="xbmc.addon.repository" name="DutchTechTestRepo">
             <dir>
                 <info compressed="false">https://raw.githubusercontent.com/TechXXX/DutchTechTestRepo/main/addons.xml</info>
