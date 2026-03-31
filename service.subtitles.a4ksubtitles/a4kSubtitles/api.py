@@ -47,8 +47,18 @@ class A4kSubtitlesApi(object):
         default = self.core.kodi.xbmc.getInfoLabel
         self.core.kodi.xbmc.getInfoLabel = get_info_label
 
-        default_ = self.core.kodi.xbmc.Player().getPlayingFile
-        self.core.kodi.xbmc.Player().getPlayingFile = lambda: meta.get('filename', '')
+        player = self.core.kodi.xbmc.Player()
+        player_get_playing_file_restore = None
+        video_get_filename_restore = None
+        try:
+            default_ = player.getPlayingFile
+            player.getPlayingFile = lambda: meta.get('filename', '')
+            player_get_playing_file_restore = default_
+        except AttributeError:
+            # In live Kodi, the Player method can be read-only. Fall back to overriding
+            # a4kSubtitles' filename helper so API-mode searches still use the mocked release name.
+            video_get_filename_restore = self.core.video.__get_filename
+            self.core.video.__get_filename = lambda title: meta.get('filename', '') or title
 
         default__ = self.core.kodi.xbmcvfs.File.size
         self.core.kodi.xbmcvfs.File.size = lambda: meta.get('filesize', '')
@@ -58,7 +68,13 @@ class A4kSubtitlesApi(object):
 
         def restore():
             self.core.kodi.xbmc.getInfoLabel = default
-            self.core.kodi.xbmc.Player().getPlayingFile = default_
+            if player_get_playing_file_restore is not None:
+                try:
+                    player.getPlayingFile = player_get_playing_file_restore
+                except AttributeError:
+                    pass
+            if video_get_filename_restore is not None:
+                self.core.video.__get_filename = video_get_filename_restore
             self.core.kodi.xbmcvfs.File.size = default__
             self.core.kodi.xbmcvfs.File.hash = default___
         return restore
