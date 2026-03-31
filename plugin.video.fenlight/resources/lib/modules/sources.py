@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import re
 import time
 import traceback
 from threading import Thread
@@ -47,6 +48,7 @@ int_window_prop = 'fenlight.internal_results.%s'
 scraper_timeout = 25
 a4k_subtitles_addon_path = 'special://home/addons/service.subtitles.a4ksubtitles'
 subtitle_autoplay_probe_limit = 10
+release_group_stopwords = {'proper', 'repack', 'rerip', 'internal', 'multi', 'dubbed', 'subbed', 'readnfo', 'limited', 'extended', 'remux', 'hybrid', 'hdr', 'dv', 'uhd'}
 filter_keys = {'hevc': '[B]HEVC[/B]', '3d': '[B]3D[/B]', 'hdr': '[B]HDR[/B]', 'dv': '[B]D/VISION[/B]', 'av1': '[B]AV1[/B]', 'enhanced_upscaled': '[B]AI ENHANCED/UPSCALED[/B]'}
 preference_values = {0:100, 1:50, 2:20, 3:10, 4:5, 5:2}
 
@@ -285,13 +287,14 @@ class Sources():
 			logger('Fen Light', 'Subtitle probe starting for %s of %s autoplay results' % (probe_limit, len(results)))
 			probed_results = []
 			for item in results[:probe_limit]:
-				subtitle_hit, subtitle_names = self._a4k_result_available(a4k_api, search_params, item)
-				item = dict(item, **{'subtitle_hit': subtitle_hit, 'subtitle_names': subtitle_names})
+				subtitle_hit, subtitle_names, subtitle_match_score = self._a4k_result_available(a4k_api, search_params, item)
+				item = dict(item, **{'subtitle_hit': subtitle_hit, 'subtitle_names': subtitle_names, 'subtitle_match_score': subtitle_match_score})
 				probed_results.append(item)
 			subtitle_matches = [i for i in probed_results if i.get('subtitle_hit')]
 			if not subtitle_matches:
 				logger('Fen Light', 'Subtitle probe found no subtitle-backed autoplay sources')
 				return results
+			subtitle_matches.sort(key=lambda k: k.get('subtitle_match_score', 0), reverse=True)
 			logger('Fen Light', 'Subtitle probe promoted %s source(s). First promoted source: %s' % (len(subtitle_matches), subtitle_matches[0].get('name', subtitle_matches[0].get('display_name', 'UNKNOWN'))))
 			no_subtitle_matches = [i for i in probed_results if not i.get('subtitle_hit')]
 			return subtitle_matches + no_subtitle_matches + results[probe_limit:]
@@ -322,19 +325,76 @@ class Sources():
 	def _a4k_result_available(self, a4k_api, search_params, item):
 		cache_key = '%s|%s|%s|%s|%s' % (self.media_type, self.meta.get('imdb_id', ''), self.meta.get('season', ''), self.meta.get('episode', ''), item.get('name', item.get('display_name', '')))
 		if cache_key in self.subtitle_probe_cache:
-			cached_hit, cached_names = self.subtitle_probe_cache[cache_key]
-			logger('Fen Light', 'Subtitle probe cache hit for %s | match=%s | subtitles=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), cached_hit, ' | '.join(cached_names[:3]) or 'None'))
+			cached_hit, cached_names, cached_score = self.subtitle_probe_cache[cache_key]
+			logger('Fen Light', 'Subtitle probe cache hit for %s | match=%s | score=%s | subtitles=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), cached_hit, cached_score, ' | '.join(cached_names[:3]) or 'None'))
 			return self.subtitle_probe_cache[cache_key]
 		try:
 			results = a4k_api.search(search_params, video_meta=self._a4k_video_meta(item))
-			subtitle_names = [i.get('name', '') for i in results[:3]]
-			has_result = len(results) > 0
-			logger('Fen Light', 'Subtitle probe checked source=%s | match=%s | subtitles=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), has_result, ' | '.join(subtitle_names) or 'None'))
+			subtitle_names, subtitle_match_score = self._match_a4k_results_to_source(results, item)
+			has_result = subtitle_match_score > 0
+			logger('Fen Light', 'Subtitle probe checked source=%s | match=%s | score=%s | subtitles=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), has_result, subtitle_match_score, ' | '.join(subtitle_names[:3]) or 'None'))
 		except:
-			has_result, subtitle_names = False, []
+			has_result, subtitle_names, subtitle_match_score = False, [], 0
 			logger('Fen Light', 'Subtitle probe failed for source=%s | error=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), traceback.format_exc().replace('\n', ' | ')))
-		self.subtitle_probe_cache[cache_key] = (has_result, subtitle_names)
+		self.subtitle_probe_cache[cache_key] = (has_result, subtitle_names, subtitle_match_score)
 		return self.subtitle_probe_cache[cache_key]
+
+	def _match_a4k_results_to_source(self, results, item):
+		source_name = item.get('name', '') or item.get('display_name', '') or ''
+		source_norm = self._normalize_release_name(source_name)
+		source_group = self._extract_release_group(source_name)
+		best_score, matched_names = 0, []
+		for result in results:
+			candidate_names = self._a4k_result_names(result)
+			for candidate_name in candidate_names:
+				score = self._subtitle_source_match_score(source_norm, source_group, candidate_name)
+				if score <= 0: continue
+				if score > best_score:
+					best_score = score
+					matched_names = [candidate_name]
+				elif score == best_score and not candidate_name in matched_names:
+					matched_names.append(candidate_name)
+		if matched_names: return matched_names, best_score
+		return [i for i in list(itertools.chain.from_iterable(self._a4k_result_names(result) for result in results)) if i][:3], 0
+
+	def _a4k_result_names(self, result):
+		names = []
+		for key in ('name', 'release', 'filename'):
+			value = result.get(key, '')
+			if value and not value in names: names.append(value)
+		action_args = result.get('action_args', {})
+		if action_args:
+			for key in ('filename', 'release'):
+				value = action_args.get(key, '')
+				if value and not value in names: names.append(value)
+		return names
+
+	def _subtitle_source_match_score(self, source_norm, source_group, subtitle_name):
+		subtitle_norm = self._normalize_release_name(subtitle_name)
+		if not source_norm or not subtitle_norm: return 0
+		if source_norm == subtitle_norm: return 100
+		if subtitle_norm in source_norm or source_norm in subtitle_norm: return 80
+		subtitle_group = self._extract_release_group(subtitle_name)
+		if source_group and subtitle_group and source_group == subtitle_group: return 60
+		return 0
+
+	def _normalize_release_name(self, name):
+		if not name: return ''
+		name = clean_file_name(name).lower()
+		name = re.sub(r'\.(mkv|mp4|avi|ts|m2ts|srt|sub|ass|ssa)$', '', name)
+		name = re.sub(r'[^a-z0-9]+', '.', name).strip('.')
+		return name
+
+	def _extract_release_group(self, name):
+		name = self._normalize_release_name(name)
+		if not name: return ''
+		parts = [i for i in name.split('.') if i]
+		for token in reversed(parts):
+			if token in release_group_stopwords: continue
+			if token.isdigit(): continue
+			if len(token) < 2: continue
+			return token
+		return ''
 
 	def _a4k_video_meta(self, item):
 		release_name = item.get('name', '') or item.get('display_name', '') or ''
