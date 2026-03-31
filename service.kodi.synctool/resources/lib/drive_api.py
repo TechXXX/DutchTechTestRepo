@@ -212,6 +212,36 @@ class DriveClient:
         files = data.get("files") or []
         return normalize_metadata(files[0]) if files else None
 
+    def list_files(self, folder_id="", remote_mode="appdata", name_prefix=""):
+        query = ["trashed=false"]
+        params = {
+            "pageSize": 1000,
+            "fields": "nextPageToken,files(id,name,modifiedTime,version,size)",
+        }
+        if remote_mode == "appdata":
+            query.append("'%s' in parents" % APPDATA_FOLDER)
+            params["spaces"] = APPDATA_FOLDER
+        elif folder_id:
+            query.append("'%s' in parents" % folder_id)
+            params["supportsAllDrives"] = "true"
+            params["includeItemsFromAllDrives"] = "true"
+        data = []
+        next_page = ""
+        while True:
+            request_params = dict(params)
+            request_params["q"] = " and ".join(query)
+            if next_page:
+                request_params["pageToken"] = next_page
+            payload = _request_json("%s?%s" % (DRIVE_FILES_API, urlencode(request_params)), headers=self._auth_header())
+            data.extend(payload.get("files") or [])
+            next_page = payload.get("nextPageToken") or ""
+            if not next_page:
+                break
+        files = [normalize_metadata(item) for item in data]
+        if name_prefix:
+            files = [item for item in files if item and (item.get("name") or "").startswith(name_prefix)]
+        return files
+
     def resolve_remote(self, file_id, folder_id, filename, remote_mode="appdata"):
         if remote_mode == "file_id" and file_id:
             return self.get_file(file_id)

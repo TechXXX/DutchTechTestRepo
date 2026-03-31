@@ -2,7 +2,49 @@
 <settings>
   <category label="General">
     <setting id="pair_google_drive_action" type="action" label="Pair Google Drive now" action="RunPlugin(plugin://service.kodi.synctool/?action=pair_google_drive)"/>
+    <setting id="sync_now_action" type="action" label="Sync now" action="RunPlugin(plugin://service.kodi.synctool/?action=sync_now)"/>
     <setting id="sync_on_startup" type="bool" label="Sync on Kodi startup" default="true"/>
+  </category>
+  <category label="Core Data">
+    <setting id="sync_favourites" type="bool" label="Favourites" default="true"/>
+    <setting id="sync_sources" type="bool" label="Sources" default="false"/>
+    <setting id="sync_passwords" type="bool" label="Passwords" default="false"/>
+    <setting id="sync_guisettings" type="bool" label="GUI Settings" default="false"/>
+    <setting id="sync_keymaps" type="bool" label="Keymaps" default="false"/>
+  </category>
+  <category label="Skin">
+    <setting id="sync_skin_widgets" type="bool" label="Skin Widgets (script.skinshortcuts for AH2, AF3, compatible skins)" default="false"/>
+  </category>
+  <category label="Addon Settings Backup">
+    <setting type="lsep" label="Addon Slot 1"/>
+    <setting id="addon_backup_1_enabled" type="bool" label="Enable slot 1" default="false"/>
+    <setting id="addon_backup_1_path" type="text" label="Addon data folder under addon_data" default="" enable="eq(-1,true)"/>
+    <setting id="addon_backup_1_browse" type="action" label="Choose addon settings folder" action="RunPlugin(plugin://service.kodi.synctool/?action=browse_addon_backup&amp;slot=1)" enable="eq(-2,true)"/>
+    <setting type="lsep" label="Addon Slot 2"/>
+    <setting id="addon_backup_2_enabled" type="bool" label="Enable slot 2" default="false"/>
+    <setting id="addon_backup_2_path" type="text" label="Addon data folder under addon_data" default="" enable="eq(-1,true)"/>
+    <setting id="addon_backup_2_browse" type="action" label="Choose addon settings folder" action="RunPlugin(plugin://service.kodi.synctool/?action=browse_addon_backup&amp;slot=2)" enable="eq(-2,true)"/>
+    <setting type="lsep" label="Addon Slot 3"/>
+    <setting id="addon_backup_3_enabled" type="bool" label="Enable slot 3" default="false"/>
+    <setting id="addon_backup_3_path" type="text" label="Addon data folder under addon_data" default="" enable="eq(-1,true)"/>
+    <setting id="addon_backup_3_browse" type="action" label="Choose addon settings folder" action="RunPlugin(plugin://service.kodi.synctool/?action=browse_addon_backup&amp;slot=3)" enable="eq(-2,true)"/>
+  </category>
+  <category label="Custom">
+    <setting type="lsep" label="Custom Slot 1"/>
+    <setting id="custom_1_enabled" type="bool" label="Enable slot 1" default="false"/>
+    <setting id="custom_1_kind" type="enum" label="Slot 1 type" values="file|directory" default="0" enable="eq(-1,true)"/>
+    <setting id="custom_1_path" type="text" label="Slot 1 path" default="" enable="eq(-2,true)"/>
+    <setting id="custom_1_browse" type="action" label="Browse for slot 1 path" action="RunPlugin(plugin://service.kodi.synctool/?action=browse_custom_path&amp;slot=1)" enable="eq(-3,true)"/>
+    <setting type="lsep" label="Custom Slot 2"/>
+    <setting id="custom_2_enabled" type="bool" label="Enable slot 2" default="false"/>
+    <setting id="custom_2_kind" type="enum" label="Slot 2 type" values="file|directory" default="0" enable="eq(-1,true)"/>
+    <setting id="custom_2_path" type="text" label="Slot 2 path" default="" enable="eq(-2,true)"/>
+    <setting id="custom_2_browse" type="action" label="Browse for slot 2 path" action="RunPlugin(plugin://service.kodi.synctool/?action=browse_custom_path&amp;slot=2)" enable="eq(-3,true)"/>
+    <setting type="lsep" label="Custom Slot 3"/>
+    <setting id="custom_3_enabled" type="bool" label="Enable slot 3" default="false"/>
+    <setting id="custom_3_kind" type="enum" label="Slot 3 type" values="file|directory" default="0" enable="eq(-1,true)"/>
+    <setting id="custom_3_path" type="text" label="Slot 3 path" default="" enable="eq(-2,true)"/>
+    <setting id="custom_3_browse" type="action" label="Browse for slot 3 path" action="RunPlugin(plugin://service.kodi.synctool/?action=browse_custom_path&amp;slot=3)" enable="eq(-3,true)"/>
   </category>
   <category label="Google OAuth">
     <setting id="oauth_refresh_token" type="text" label="OAuth refresh token" default=""/>
@@ -11,12 +53,12 @@
     <setting id="oauth_access_token_expires_at" type="text" label="OAuth access token expiry cache" default=""/>
     <setting id="oauth_scope" type="text" label="OAuth granted scope cache" default=""/>
     <setting id="oauth_bridge_url" type="text" label="OAuth bridge URL" default="https://auth-bridge-rho.vercel.app"/>
-    <setting id="upload_local_changes" type="bool" label="Allow uploading newer local favourites.xml" default="true" visible="false"/>
+    <setting id="upload_local_changes" type="bool" label="Allow uploading newer local sync targets" default="true" visible="false"/>
     <setting id="log_verbose" type="bool" label="Enable verbose logging" default="false" visible="false"/>
     <setting id="pair_on_next_startup" type="bool" label="Launch Google Drive pairing on next Kodi startup" default="false" visible="false"/>
     <setting id="remote_mode" type="text" label="Remote mode: appdata, drive_file, or file_id" default="appdata" visible="false"/>
     <setting id="drive_file_id" type="text" label="Drive file ID (used in file_id mode)" default="" visible="false"/>
     <setting id="drive_folder_id" type="text" label="Drive folder ID (used in drive_file mode)" default="" visible="false"/>
-    <setting id="remote_filename" type="text" label="Remote filename" default="favourites.xml" visible="false"/>
+    <setting id="remote_filename" type="text" label="Legacy remote filename override" default="favourites.xml" visible="false"/>
   </category>
 </settings>

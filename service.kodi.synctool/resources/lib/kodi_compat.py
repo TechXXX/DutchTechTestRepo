@@ -100,6 +100,27 @@ def show_yesno_dialog(heading, message, yeslabel="Yes", nolabel="No"):
     return xbmcgui.Dialog().yesno(heading, message, yeslabel=yeslabel, nolabel=nolabel)
 
 
+def browse_path(kind, heading, default_path=""):
+    if xbmcgui is None:
+        return default_path
+    dialog = xbmcgui.Dialog()
+    if not hasattr(dialog, "browseSingle"):
+        return ""
+    browse_type = 0 if kind == "directory" else 1
+    try:
+        return dialog.browseSingle(
+            browse_type,
+            heading,
+            "files",
+            "",
+            False,
+            False,
+            default_path,
+        )
+    except TypeError:  # pragma: no cover
+        return dialog.browseSingle(browse_type, heading, "files", "", False, False, default_path)
+
+
 def progress_dialog(heading, line1=""):
     if xbmcgui is None:
         return StandaloneProgressDialog(heading, line1)

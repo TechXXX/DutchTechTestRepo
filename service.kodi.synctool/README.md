@@ -1,10 +1,11 @@
 # Kodi Sync Tool
 
-Kodi service add-on that syncs `favourites.xml` across devices using Google Drive and an OAuth browser pairing flow.
+Kodi service add-on that syncs selected Kodi data across devices using Google Drive and an OAuth browser pairing flow.
 
 This add-on is designed to stay simple in Kodi:
 - Pair once with Google Drive
 - Sync automatically on Kodi startup
+- Pick exactly which Kodi files and folders should sync
 - Store the remote backup in hidden Google Drive app data
 
 ## User Setup
@@ -15,24 +16,37 @@ This add-on is designed to stay simple in Kodi:
 4. Complete the sign-in flow in your browser or on your phone.
 5. Leave `Sync on Kodi startup` enabled.
 
-After pairing, the add-on will sync `favourites.xml` each time Kodi starts.
+After pairing, the add-on will sync the enabled targets each time Kodi starts.
 
 ## How It Works
 
-- The add-on syncs on Kodi startup only.
+- The add-on syncs enabled targets on Kodi startup or when you run `Sync now`.
 - Remote storage uses Google Drive app data by default.
 - The backup is not intended to be visible in the normal Drive file list.
 - Sync behavior is last-write-wins.
 
-This means the newest `favourites.xml` seen during sync becomes the remote version.
+Built-in targets now include:
+- `Favourites`
+- `Sources`
+- `Passwords`
+- `GUI Settings`
+- `Keymaps`
+- `Skin Widgets` (`script.skinshortcuts`)
+- up to 3 add-on settings folders under `addon_data`
+- up to 3 custom file or folder paths
 
-If a device downloads a newer favourites file during startup, Kodi may not always reflect the change in the UI until favourites are reopened or Kodi is restarted again.
+This means the newest version of each individual target seen during sync becomes the remote version for that target.
 
 ## Settings
 
-Visible settings are intentionally minimal:
+Visible settings are grouped by category:
 - `Pair Google Drive now`
+- `Sync now`
 - `Sync on Kodi startup`
+- `Core Data`
+- `Skin`
+- `Addon Settings Backup`
+- `Custom`
 
 The add-on also keeps internal OAuth and storage settings for compatibility, but normal users do not need to manage them directly.
 

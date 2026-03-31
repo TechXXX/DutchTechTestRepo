@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="service.kodi.synctool"
        name="Kodi Sync Tool"
-       version="0.2.37"
+       version="0.2.38"
        provider-name="Codex">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
@@ -11,8 +11,8 @@
   <extension point="xbmc.python.script" library="pair_google_drive.py"/>
   <extension point="xbmc.python.pluginsource" library="plugin.py"/>
   <extension point="xbmc.addon.metadata">
-    <summary lang="en_GB">Sync Kodi data with Google Drive</summary>
-    <description lang="en_GB">A minimal background service add-on for syncing Kodi data with Google Drive using OAuth refresh tokens.</description>
+    <summary lang="en_GB">Sync selected Kodi data with Google Drive</summary>
+    <description lang="en_GB">A background service add-on for syncing selected Kodi files and folders with Google Drive using OAuth refresh tokens.</description>
     <assets>
       <icon>resources/icon.png</icon>
       <fanart>resources/fanart.jpg</fanart>
@@ -20,7 +20,10 @@
     <platform>all</platform>
     <license>MIT</license>
     <source>https://example.invalid/service.kodi.synctool</source>
-    <news>v0.2.37
+    <news>v0.2.38
+- Add multi-category sync targets for core data, skin widgets, addon settings backups, and custom file or folder paths
+
+v0.2.37
 - Refresh the add-on icon and fanart artwork for the new Kodi Sync Tool identity
 
 v0.2.36
