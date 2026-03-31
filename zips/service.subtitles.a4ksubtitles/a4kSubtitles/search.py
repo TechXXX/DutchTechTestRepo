@@ -1,5 +1,37 @@
 # -*- coding: utf-8 -*-
 
+def __sample_result_names(results, limit=3):
+    sample_names = []
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        name = result.get('name', '')
+        if not name:
+            action_args = result.get('action_args', {})
+            name = action_args.get('filename', '')
+        if not name or name in sample_names:
+            continue
+        sample_names.append(name)
+        if len(sample_names) >= limit:
+            break
+    return sample_names
+
+def __log_results_summary(core, stage, results):
+    try:
+        if results is None:
+            summary = 'type=None count=0'
+        elif not isinstance(results, list):
+            summary = 'type=%s' % type(results).__name__
+        else:
+            first_keys = 'None'
+            if results and isinstance(results[0], dict):
+                first_keys = ','.join(sorted(results[0].keys())[:8]) or 'None'
+            sample_names = ' | '.join(__sample_result_names(results)) or 'None'
+            summary = 'type=list count=%s keys=%s sample_names=%s' % (len(results), first_keys, sample_names)
+        core.logger.debug('search.%s - %s' % (stage, summary))
+    except Exception as exc:
+        core.logger.error('search.%s - summary_failed: %s' % (stage, exc))
+
 def __auth_service(core, service_name, request):
     service = core.services[service_name]
     response = core.request.execute(core, request)
@@ -15,6 +47,7 @@ def __query_service(core, service_name, meta, request, results):
         else:
             service_results = []
 
+        __log_results_summary(core, '%s.raw' % service_name, service_results)
         results.extend(service_results)
 
         core.logger.debug(lambda: core.json.dumps({
@@ -109,8 +142,11 @@ def __apply_limit(core, all_results, meta):
     return results[:limit]
 
 def __prepare_results(core, meta, results):
+    __log_results_summary(core, 'prepare.input', results)
     results = __apply_language_filter(meta, results)
+    __log_results_summary(core, 'prepare.language_filter', results)
     results = __sanitize_results(core, meta, results)
+    __log_results_summary(core, 'prepare.sanitized', results)
 
     release_groups = [
         ['bluray', 'bd', 'bdrip', 'brrip', 'bdmv', 'bdscr', 'remux', 'bdremux', 'uhdremux', 'uhdbdremux', 'uhdbluray'],
@@ -300,8 +336,11 @@ def __prepare_results(core, meta, results):
         )
 
     results = sorted(results, key=sorter)
+    __log_results_summary(core, 'prepare.sorted_initial', results)
     results = __apply_limit(core, results, meta)
+    __log_results_summary(core, 'prepare.limited', results)
     results = sorted(results, key=sorter)
+    __log_results_summary(core, 'prepare.sorted_final', results)
 
     return results
 
@@ -327,6 +366,7 @@ def __wait_threads(core, request_threads):
     core.utils.wait_threads(threads)
 
 def __complete_search(core, results, meta):
+    __log_results_summary(core, 'complete', results)
     if core.api_mode_enabled:
         return results
 
@@ -351,6 +391,9 @@ def search(core, params):
     meta.languages = __parse_languages(core, core.utils.unquote(params['languages']).split(','))
     meta.preferredlanguage = core.kodi.parse_language(params['preferredlanguage'])
     core.logger.debug(lambda: core.json.dumps(meta, default=lambda o: '', indent=2))
+    core.logger.debug('search.meta_languages - languages=%s preferred=%s api_mode=%s filename=%s' % (
+        meta.languages, meta.preferredlanguage, core.api_mode_enabled, getattr(meta, 'filename', '')
+    ))
 
     if meta.imdb_id == '':
         core.logger.error('missing imdb id!')
@@ -359,6 +402,7 @@ def search(core, params):
 
     threads = []
     (results, force_search) = __get_last_results(core, meta)
+    __log_results_summary(core, 'cached', results)
     for service_name in core.services:
         if len(results) > 0 and (__has_results(service_name, results) or service_name not in force_search):
             continue
