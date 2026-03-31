@@ -813,7 +813,8 @@ class Sources():
 							self.progress_dialog.busy_spinner('false')
 							self.progress_dialog.update_resolver(percent=resolve_percent)
 							sleep(200)
-							player.run(url, self)
+							if self.background: player.run(url, self)
+							else: player.run_resolved(url, self)
 						else: continue
 						if self.cancel_all_playback: break
 						if self.playback_successful: break

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # TRUMP WON
+import sys
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
 from os import path as osPath
 from urllib.parse import urlencode
@@ -13,6 +14,7 @@ get_infolabel, get_visibility, execute_JSON, window_xml_dialog = xbmc.getInfoLab
 executebuiltin, xbmc_sleep, convertLanguage, getSupportedMedia, PlayList = xbmc.executebuiltin, xbmc.sleep, xbmc.convertLanguage, xbmc.getSupportedMedia, xbmc.PlayList
 progressDialogBG = xbmcgui.DialogProgressBG
 endOfDirectory, addSortMethod, listdir, mkdir, mkdirs = xbmcplugin.endOfDirectory, xbmcplugin.addSortMethod, xbmcvfs.listdir, xbmcvfs.mkdir, xbmcvfs.mkdirs
+setResolvedUrl = xbmcplugin.setResolvedUrl
 addDirectoryItem, addDirectoryItems, setContent, setCategory = xbmcplugin.addDirectoryItem, xbmcplugin.addDirectoryItems, xbmcplugin.setContent, xbmcplugin.setPluginCategory
 path_join = osPath.join
 img_url = 'https://i.imgur.com/%s.png'
@@ -108,6 +110,10 @@ def set_category(handle, label):
 
 def end_directory(handle, cacheToDisc=True):
 	endOfDirectory(handle, cacheToDisc=cacheToDisc)
+
+def set_resolved_url(listitem, succeeded=True, handle=None):
+	if handle is None: handle = int(sys.argv[1])
+	return setResolvedUrl(handle, succeeded, listitem)
 
 def set_view_mode(view_type, content='files', is_external=None):
 	if not get_property('fenlight.use_viewtypes') == 'true': return
