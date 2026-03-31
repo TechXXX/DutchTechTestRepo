@@ -25,6 +25,43 @@ class A4kSubtitlesApi(object):
         self.core = importlib.import_module('a4kSubtitles.core')
 
     def __mock_video_meta(self, meta):
+        def build_mock_meta():
+            filename = meta.get('filename', '') or meta.get('title', '')
+            filename_without_ext = filename
+            try:
+                filename_without_ext = os.path.splitext(filename)[0]
+            except:
+                pass
+
+            mocked_meta = self.core.utils.DictAsObject({
+                'year': str(meta.get('year', '') or ''),
+                'season': str(meta.get('season', '') or ''),
+                'episode': str(meta.get('episode', '') or ''),
+                'tvshow': str(meta.get('tvshow', '') or ''),
+                'title': str(meta.get('title', '') or ''),
+                'imdb_id': str(meta.get('imdb_id', '') or ''),
+                'tvshow_year': str(meta.get('tvshow_year', '') or ''),
+                'filename': str(filename or ''),
+                'filename_without_ext': str(filename_without_ext or ''),
+                'filesize': str(meta.get('filesize', '') or ''),
+                'filehash': str(meta.get('filehash', '') or ''),
+                'tvshow_year_thread': None,
+            })
+
+            mocked_meta.tv_show_imdb_id = mocked_meta.imdb_id
+            mocked_meta.is_tvshow = mocked_meta.tvshow != ''
+            mocked_meta.is_movie = not mocked_meta.is_tvshow
+            if mocked_meta.is_tvshow and mocked_meta.tvshow_year == '':
+                mocked_meta.tvshow_year = mocked_meta.year
+
+            try:
+                if len(mocked_meta.imdb_id) > 2:
+                    mocked_meta.imdb_id_as_int = int(mocked_meta.imdb_id[2:].lstrip('0'))
+            except:
+                mocked_meta.imdb_id_as_int = 0
+
+            return mocked_meta
+
         def get_info_label(label):
             if label == 'System.BuildVersionCode':
                 return meta.get('version', '19.1.0')
@@ -50,8 +87,10 @@ class A4kSubtitlesApi(object):
         player = self.core.kodi.xbmc.Player()
         player_get_playing_file_restore = None
         video_get_filename_restore = None
+        video_get_meta_restore = self.core.video.get_meta
         file_size_restore = None
         file_hash_restore = None
+        self.core.video.get_meta = lambda _core: build_mock_meta()
         try:
             default_ = player.getPlayingFile
             player.getPlayingFile = lambda: meta.get('filename', '')
@@ -76,6 +115,7 @@ class A4kSubtitlesApi(object):
 
         def restore():
             self.core.kodi.xbmc.getInfoLabel = default
+            self.core.video.get_meta = video_get_meta_restore
             if player_get_playing_file_restore is not None:
                 try:
                     player.getPlayingFile = player_get_playing_file_restore
