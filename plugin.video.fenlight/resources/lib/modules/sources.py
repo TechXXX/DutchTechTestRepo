@@ -332,7 +332,8 @@ class Sources():
 			results = a4k_api.search(search_params, video_meta=self._a4k_video_meta(item))
 			subtitle_names, subtitle_match_score = self._match_a4k_results_to_source(results, item)
 			has_result = subtitle_match_score > 0
-			logger('Fen Light', 'Subtitle probe checked source=%s | match=%s | score=%s | subtitles=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), has_result, subtitle_match_score, ' | '.join(subtitle_names[:3]) or 'None'))
+			logger('Fen Light', 'Subtitle probe checked source=%s | match=%s | score=%s | results=%s | subtitles=%s' % (
+				item.get('name', item.get('display_name', 'UNKNOWN')), has_result, subtitle_match_score, self._a4k_results_debug_summary(results), ' | '.join(subtitle_names[:3]) or 'None'))
 		except:
 			has_result, subtitle_names, subtitle_match_score = False, [], 0
 			logger('Fen Light', 'Subtitle probe failed for source=%s | error=%s' % (item.get('name', item.get('display_name', 'UNKNOWN')), traceback.format_exc().replace('\n', ' | ')))
@@ -368,6 +369,22 @@ class Sources():
 				value = action_args.get(key, '')
 				if value and not value in names: names.append(value)
 		return names
+
+	def _a4k_results_debug_summary(self, results):
+		try:
+			if results is None: return 'type=None count=0'
+			if not isinstance(results, list): return 'type=%s' % type(results).__name__
+			if not results: return 'type=list count=0'
+			sample_names = []
+			for result in results[:3]:
+				for name in self._a4k_result_names(result):
+					if name and not name in sample_names:
+						sample_names.append(name)
+				if len(sample_names) >= 3: break
+			first_keys = ','.join(sorted(results[0].keys())[:6]) if isinstance(results[0], dict) else type(results[0]).__name__
+			return 'type=list count=%s sample_keys=%s sample_names=%s' % (len(results), first_keys or 'None', ' | '.join(sample_names[:3]) or 'None')
+		except:
+			return 'debug_error=%s' % traceback.format_exc().replace('\n', ' | ')
 
 	def _subtitle_source_match_score(self, source_norm, source_group, subtitle_name):
 		subtitle_norm = self._normalize_release_name(subtitle_name)
