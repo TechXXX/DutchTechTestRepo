@@ -305,7 +305,7 @@ class Sources():
 		self.a4k_subtitles_checked = True
 		try:
 			append_module_to_syspath(a4k_subtitles_addon_path)
-			self.a4k_subtitles_api = manual_function_import('a4kSubtitles Patched.api', 'A4kSubtitlesApi')()
+			self.a4k_subtitles_api = manual_function_import('a4kSubtitles.api', 'A4kSubtitlesApi')()
 			logger('Fen Light Patched', 'Subtitle probe connected to a4kSubtitles Patched API')
 		except: self.a4k_subtitles_api = None
 		return self.a4k_subtitles_api
