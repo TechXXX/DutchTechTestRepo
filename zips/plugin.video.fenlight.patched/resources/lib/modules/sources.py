@@ -318,6 +318,9 @@ class Sources():
 			languages = [i for i in languages if i not in (None, '', 'none')]
 			if not languages and preferred_language not in (None, '', 'none'): languages = [preferred_language]
 			if not languages: return None
+			# Match the last known-good pre-play behavior: probe availability with English
+			# releases while still honoring the user's preferred subtitle language later.
+			if languages == ['Dutch']: languages = ['English']
 			if preferred_language in (None, '', 'none'): preferred_language = languages[0]
 			return {'action': 'search', 'languages': ','.join(languages), 'preferredlanguage': preferred_language}
 		except: return None
