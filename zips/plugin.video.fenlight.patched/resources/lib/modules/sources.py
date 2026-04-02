@@ -53,6 +53,56 @@ release_group_stopwords = {'proper', 'repack', 'rerip', 'internal', 'multi', 'du
 release_group_suffix_stopwords = {'eztv', 'eztvx', 'eztvx.to', 'ettv', 'tgx', 'torrentgalaxy', 'v2', 'v3', 'v4'}
 release_group_domain_stopwords = {'to', 'com', 'org', 'net', 'cc', 'io', 'me'}
 release_group_extension_stopwords = {'mkv', 'mp4', 'avi', 'ts', 'm2ts', 'srt', 'sub', 'ass', 'ssa'}
+release_family_groups = (
+	('bluray', {'bluray', 'bd', 'bdrip', 'brrip', 'bdmv', 'bdscr', 'remux', 'bdremux', 'uhdremux', 'uhdbdremux', 'uhdbluray'}),
+	('web', {'web', 'webdl', 'webrip', 'webr', 'webdlrip', 'webcap'}),
+	('dvd', {'dvd', 'dvd5', 'dvd9', 'dvdr', 'dvdrip', 'dvdscr'}),
+	('prerelease', {'scr', 'screener', 'r5', 'r6', 'cam', 'camrip', 'hdcam', 'tele', 'telesync', 'ts'}),
+)
+quality_family_groups = (
+	('2160p', {'4k', '2160p', '2160', '4kuhd', '4kultrahd', 'ultrahd', 'uhd'}),
+	('1080p', {'1080p', '1080'}),
+	('720p', {'720p', '720'}),
+	('480p', {'480p'}),
+	('low', {'360p', '240p', '144p'}),
+)
+service_family_groups = (
+	('netflix', {'netflix', 'nflx', 'nf'}),
+	('amazon', {'amazon', 'amzn', 'primevideo'}),
+	('hulu', {'hulu', 'hlu'}),
+	('crunchyroll', {'crunchyroll', 'cr'}),
+	('disney', {'disney', 'disneyplus'}),
+	('hbo', {'hbo', 'hbonow', 'hbogo', 'hbomax', 'hmax'}),
+	('bbc', {'bbc'}),
+	('sky', {'sky', 'skyq'}),
+	('syfy', {'syfy'}),
+	('atvp', {'atvp', 'atvplus'}),
+	('pcok', {'pcok', 'peacock'}),
+)
+codec_family_groups = (
+	('h264', {'x264', 'h264', '264', 'avc'}),
+	('h265', {'x265', 'h265', '265', 'hevc'}),
+	('modern', {'av1', 'vp9', 'vp8', 'divx', 'xvid'}),
+)
+audio_family_groups = (
+	('dts', {'dts', 'dtshd', 'atmos', 'truehd'}),
+	('aac', {'aac', 'ac'}),
+	('dd', {'dd', 'ddp', 'ddp5', 'dd5', 'dd2', 'dd1', 'dd7', 'ddp7'}),
+)
+color_family_groups = (
+	('hdr', {'hdr', '10bit', '12bit', 'hdr10', 'hdr10plus', 'dolbyvision', 'dolby', 'vision'}),
+	('sdr', {'sdr', '8bit'}),
+)
+release_group_metadata_stopwords = set().union(
+	release_group_stopwords, release_group_suffix_stopwords, release_group_domain_stopwords, release_group_extension_stopwords,
+	{i for _, group in release_family_groups for i in group},
+	{i for _, group in quality_family_groups for i in group},
+	{i for _, group in service_family_groups for i in group},
+	{i for _, group in codec_family_groups for i in group},
+	{i for _, group in audio_family_groups for i in group},
+	{i for _, group in color_family_groups for i in group},
+	{'sub', 'subs', 'subtitle', 'multi', 'multiple'}
+)
 filter_keys = {'hevc': '[B]HEVC[/B]', '3d': '[B]3D[/B]', 'hdr': '[B]HDR[/B]', 'dv': '[B]D/VISION[/B]', 'av1': '[B]AV1[/B]', 'enhanced_upscaled': '[B]AI ENHANCED/UPSCALED[/B]'}
 preference_values = {0:100, 1:50, 2:20, 3:10, 4:5, 5:2}
 
@@ -403,13 +453,14 @@ class Sources():
 		subtitle_norm = self._normalize_release_name(subtitle_name)
 		if not source_norm or not subtitle_norm: return 0
 		subtitle_group = self._extract_release_group(subtitle_name)
+		feature_score = self._release_feature_alignment_score(source_norm, subtitle_norm)
 		if source_norm == subtitle_norm: return 100
 		source_tokens = [i for i in source_norm.split('.') if i]
 		subtitle_tokens = [i for i in subtitle_norm.split('.') if i]
 		source_tail = self._effective_name_tail(source_tokens)
 		subtitle_tail = self._effective_name_tail(subtitle_tokens)
 		if source_group and subtitle_group:
-			if source_group != subtitle_group: return 0
+			if source_group != subtitle_group: return feature_score
 			if subtitle_norm in source_norm or source_norm in subtitle_norm: return 98
 			tail_score = SequenceMatcher(None, source_tail, subtitle_tail).ratio() if source_tail and subtitle_tail else 0.0
 			ratio_score = SequenceMatcher(None, source_norm, subtitle_norm).ratio()
@@ -418,16 +469,78 @@ class Sources():
 			if confidence >= 0.9: return 95
 			if confidence >= 0.82: return 92
 			if confidence >= 0.72: return 88
-			return 84
-		if subtitle_norm in source_norm or source_norm in subtitle_norm: return 95
+			return max(84, feature_score)
+		if subtitle_norm in source_norm or source_norm in subtitle_norm: return max(95, feature_score)
 		if source_tail and subtitle_tail:
 			tail_score = SequenceMatcher(None, source_tail, subtitle_tail).ratio()
 			ratio_score = SequenceMatcher(None, source_norm, subtitle_norm).ratio()
 			confidence = (tail_score * 0.75) + (ratio_score * 0.25)
-			if confidence >= 0.9: return 72
-			if confidence >= 0.82: return 64
-			if confidence >= 0.74: return 55
+			if confidence >= 0.9: return max(72, feature_score)
+			if confidence >= 0.82: return max(64, feature_score)
+			if confidence >= 0.74: return max(55, feature_score)
+		return feature_score
+
+	def _release_feature_alignment_score(self, source_norm, subtitle_norm):
+		source_features = self._release_features(source_norm)
+		subtitle_features = self._release_features(subtitle_norm)
+		score, matched_categories = 0, 0
+		if source_features['release'] and subtitle_features['release']:
+			if source_features['release'] == subtitle_features['release']:
+				score += 22
+				matched_categories += 1
+			elif 'prerelease' in (source_features['release'], subtitle_features['release']):
+				return 0
+			else:
+				score -= 10
+		if source_features['quality'] and subtitle_features['quality']:
+			if source_features['quality'] == subtitle_features['quality']:
+				score += 28
+				matched_categories += 1
+			else:
+				score -= 12
+		if source_features['service'] and subtitle_features['service']:
+			if source_features['service'] == subtitle_features['service']:
+				score += 10
+				matched_categories += 1
+			else:
+				score -= 4
+		if source_features['codec'] and subtitle_features['codec']:
+			if source_features['codec'] == subtitle_features['codec']:
+				score += 10
+				matched_categories += 1
+			else:
+				score -= 3
+		if source_features['audio'] and subtitle_features['audio']:
+			if source_features['audio'] == subtitle_features['audio']:
+				score += 6
+				matched_categories += 1
+		if source_features['color'] and subtitle_features['color']:
+			if source_features['color'] == subtitle_features['color']:
+				score += 8
+				matched_categories += 1
+			else:
+				score -= 3
+		if matched_categories >= 3 and score >= 36: return min(94, 40 + score)
+		if matched_categories >= 2 and score >= 22: return min(84, 34 + score)
+		if matched_categories == 1 and score >= 28: return min(72, 28 + score)
 		return 0
+
+	def _release_features(self, normalized_name):
+		tokens = {i for i in normalized_name.split('.') if i}
+		return {
+			'release': self._token_group_match(tokens, release_family_groups),
+			'quality': self._token_group_match(tokens, quality_family_groups),
+			'service': self._token_group_match(tokens, service_family_groups),
+			'codec': self._token_group_match(tokens, codec_family_groups),
+			'audio': self._token_group_match(tokens, audio_family_groups),
+			'color': self._token_group_match(tokens, color_family_groups),
+		}
+
+	def _token_group_match(self, tokens, groups):
+		for label, group in groups:
+			if any(i in tokens for i in group):
+				return label
+		return ''
 
 	def _effective_name_tail(self, tokens, size=4):
 		filtered = [i for i in tokens if i not in release_group_stopwords and i not in release_group_suffix_stopwords and not re.fullmatch(r'v\d+', i)]
@@ -443,18 +556,25 @@ class Sources():
 		return name
 
 	def _extract_release_group(self, name):
-		name = self._normalize_release_name(name)
 		if not name: return ''
-		parts = [i for i in name.split('.') if i]
-		for token in reversed(parts):
-			if token in release_group_stopwords: continue
-			if token in release_group_suffix_stopwords: continue
-			if token in release_group_domain_stopwords: continue
-			if token in release_group_extension_stopwords: continue
-			if re.fullmatch(r'v\d+', token): continue
-			if token.isdigit(): continue
-			if len(token) < 2: continue
-			return token
+		raw_name = clean_file_name(name)
+		raw_name = re.sub(r'\.(mkv|mp4|avi|ts|m2ts|srt|sub|ass|ssa)$', '', raw_name, flags=re.I)
+		candidates = []
+		bracket_match = re.search(r'\[([^\]]+)\]\s*$', raw_name)
+		if bracket_match:
+			candidates.append(bracket_match.group(1))
+		hyphen_match = re.search(r'-([A-Za-z0-9][A-Za-z0-9 ._]+)$', raw_name)
+		if hyphen_match:
+			candidates.append(hyphen_match.group(1))
+		for candidate in candidates:
+			candidate = self._normalize_release_name(candidate)
+			parts = [i for i in candidate.split('.') if i]
+			for token in reversed(parts):
+				if token in release_group_metadata_stopwords: continue
+				if re.fullmatch(r'v\d+', token): continue
+				if token.isdigit(): continue
+				if len(token) < 2: continue
+				return token
 		return ''
 
 	def _a4k_video_meta(self, item):
