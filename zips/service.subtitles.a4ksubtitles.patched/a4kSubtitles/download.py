@@ -4,7 +4,9 @@ subtitles_exts_secondary = ['.smi', '.ssa', '.aqt', '.jss', '.ass', '.rt']
 subtitles_exts_all = subtitles_exts + subtitles_exts_secondary
 
 def __download(core, filepath, request):
+    request = dict(request)
     request['stream'] = True
+    request.pop('a4k_action_args', None)
     response = core.request.execute(core, request)
     if response.status_code >= 400:
         raise Exception('Failed to download subtitle (HTTP: %s)' % response.status_code)
@@ -157,34 +159,42 @@ def download(core, params):
     core.shutil.rmtree(core.utils.temp_dir, ignore_errors=True)
     core.kodi.xbmcvfs.mkdirs(core.utils.temp_dir)
 
-    actions_args = params['action_args']
-    lang_code = core.utils.get_lang_id(actions_args['lang'], core.kodi.xbmc.ISO_639_2)
-    filename = __insert_lang_code_in_filename(core, actions_args['filename'], lang_code)
-    filename = core.utils.slugify_filename(filename)
-    filename = filename.strip()
-    archivepath = core.os.path.join(core.utils.temp_dir, 'sub.zip')
+    try:
+        actions_args = params['action_args']
+        lang_code = core.utils.get_lang_id(actions_args['lang'], core.kodi.xbmc.ISO_639_2)
+        filename = __insert_lang_code_in_filename(core, actions_args['filename'], lang_code)
+        filename = core.utils.slugify_filename(filename)
+        filename = filename.strip()
+        archivepath = core.os.path.join(core.utils.temp_dir, 'sub.zip')
 
-    service_name = params['service_name']
-    service = core.services[service_name]
-    request = service.build_download_request(core, service_name, actions_args)
+        service_name = params['service_name']
+        service = core.services[service_name]
+        request = service.build_download_request(core, service_name, actions_args)
 
-    if actions_args.get('raw', False):
-        filepath = core.os.path.join(core.utils.temp_dir, filename)
-        __download(core, filepath, request)
-    else:
-        __download(core, archivepath, request)
-        if actions_args.get('gzip', False):
-            filepath = __extract_gzip(core, archivepath, filename)
+        if actions_args.get('raw', False):
+            filepath = core.os.path.join(core.utils.temp_dir, filename)
+            __download(core, filepath, request)
         else:
-            episodeid = actions_args.get('episodeid', '')
-            filepath = __extract_zip(core, archivepath, filename, episodeid)
+            __download(core, archivepath, request)
+            if actions_args.get('gzip', False):
+                filepath = __extract_gzip(core, archivepath, filename)
+            else:
+                episodeid = actions_args.get('episodeid', '')
+                filepath = __extract_zip(core, archivepath, filename, episodeid)
 
-    __postprocess(core, filepath, lang_code)
-    core.kodi.xbmcvfs.delete(core.utils.suspend_service_file)
+        __postprocess(core, filepath, lang_code)
 
-    if core.api_mode_enabled:
-        __copy_sub_local(core, filepath)
-        return filepath
+        is_ai_translated = bool(actions_args.get('ai_translated', False))
+        is_machine_translated = bool(actions_args.get('machine_translated', False))
+        if is_ai_translated or is_machine_translated:
+            translation_label = 'AI-translated' if is_ai_translated else 'machine-translated'
+            core.kodi.notification('Selected subtitle is %s' % translation_label, time=4000)
 
-    listitem = core.kodi.xbmcgui.ListItem(label=filepath, offscreen=True)
-    core.kodi.xbmcplugin.addDirectoryItem(handle=core.handle, url=filepath, listitem=listitem, isFolder=False)
+        if core.api_mode_enabled:
+            __copy_sub_local(core, filepath)
+            return filepath
+
+        listitem = core.kodi.xbmcgui.ListItem(label=filepath, offscreen=True)
+        core.kodi.xbmcplugin.addDirectoryItem(handle=core.handle, url=filepath, listitem=listitem, isFolder=False)
+    finally:
+        core.kodi.xbmcvfs.delete(core.utils.suspend_service_file)

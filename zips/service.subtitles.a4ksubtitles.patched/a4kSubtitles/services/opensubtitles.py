@@ -100,44 +100,51 @@ def build_search_requests(core, service_name, meta):
     if token_cache is None and core.os.getenv('A4KSUBTITLES_TESTRUN') != 'true':
         return []
 
-    if meta.is_tvshow:
-        query = '%s S%.2dE%.2d' % (meta.tvshow, int(meta.season), int(meta.episode))
-    else:
-        query = '%s %s' % (meta.title, meta.year)
-
     lang_ids = core.utils.get_lang_ids(meta.languages, core.kodi.xbmc.ISO_639_1)
+    requests = []
 
-    params = {
-        'query': query,
-        'languages': ','.join(lang_ids),
-        'type': 'movie' if not meta.is_tvshow else 'episode',
-    }
+    def add_request(params):
+        request = {
+            'method': 'GET',
+            'url': __api_url + '/subtitles',
+            'params': params,
+        }
+
+        __set_api_headers(core, service_name, request, token_cache)
+        requests.append(request)
 
     if meta.is_tvshow:
-        params.update({
+        params = {
+            'query': '%s S%.2dE%.2d' % (meta.tvshow, int(meta.season), int(meta.episode)),
+            'languages': ','.join(lang_ids),
+            'type': 'episode',
             'season_number': meta.season,
             'episode_number': meta.episode,
-        })
-    else:
-        params.update({
-            'imdb_id': meta.imdb_id[2:],
-            'year': meta.year,
-        })
+        }
 
-    if meta.filehash:
-        params.update({
-            'moviehash': meta.filehash,
-        })
+        if meta.filehash:
+            params['moviehash'] = meta.filehash
 
-    request = {
-        'method': 'GET',
-        'url': __api_url + '/subtitles',
-        'params': params,
+        add_request(params)
+        return requests
+
+    base_params = {
+        'languages': ','.join(lang_ids),
+        'type': 'movie',
     }
 
-    __set_api_headers(core, service_name, request, token_cache)
+    if meta.filehash:
+        base_params['moviehash'] = meta.filehash
 
-    return [request]
+    imdb_id = meta.imdb_id[2:] if meta.imdb_id.startswith('tt') else meta.imdb_id
+    title = meta.title
+    title_with_year = '%s %s' % (title, meta.year) if meta.year else title
+
+    add_request(dict(base_params, query=title_with_year, imdb_id=imdb_id, year=meta.year))
+    add_request(dict(base_params, query=title, imdb_id=imdb_id))
+    add_request(dict(base_params, query=title))
+
+    return requests
 
 def parse_search_response(core, service_name, meta, response):
     try:
@@ -182,6 +189,8 @@ def parse_search_response(core, service_name, meta, response):
                 'lang': language,
                 'filename': filename,
                 'gzip': True,
+                'ai_translated': result.get('ai_translated', False),
+                'machine_translated': result.get('machine_translated', False),
             }
         }
 

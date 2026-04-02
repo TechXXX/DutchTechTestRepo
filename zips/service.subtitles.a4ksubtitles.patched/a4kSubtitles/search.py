@@ -152,7 +152,7 @@ def __prepare_results(core, meta, results):
         ['bluray', 'bd', 'bdrip', 'brrip', 'bdmv', 'bdscr', 'remux', 'bdremux', 'uhdremux', 'uhdbdremux', 'uhdbluray'],
         ['web', 'webdl', 'webrip', 'webr', 'webdlrip', 'webcap'],
         ['dvd', 'dvd5', 'dvd9', 'dvdr', 'dvdrip', 'dvdscr'],
-        ['scr', 'screener', 'r5', 'r6']
+        ['scr', 'screener', 'r5', 'r6', 'cam', 'camrip', 'hdcam', 'tele', 'telesync', 'ts']
     ]
     release = []
     for group in release_groups:
@@ -297,6 +297,26 @@ def __prepare_results(core, meta, results):
         cleaned_nameparts = list(filter(len, map(_filter_name, nameparts)))
         cleaned_file_nameparts = list(filter(len, map(_filter_name, meta_nameparts)))
         matching_offset = 0
+        release_mismatch_penalty = 0
+
+        source_release_group = None
+        subtitle_release_group = None
+        for group in release_groups:
+            if any(token in cleaned_file_nameparts for token in group):
+                source_release_group = group
+                break
+        for group in release_groups:
+            if any(token in cleaned_nameparts for token in group):
+                subtitle_release_group = group
+                break
+
+        if source_release_group and subtitle_release_group and source_release_group is not subtitle_release_group:
+            release_mismatch_penalty += 1.2
+
+        prerelease_group = release_groups[-1]
+        source_is_prerelease = source_release_group is prerelease_group
+        subtitle_is_prerelease = subtitle_release_group is prerelease_group or any(token in cleaned_nameparts for token in prerelease_group)
+        prerelease_rank = 0 if source_is_prerelease else int(subtitle_is_prerelease)
 
         if meta.is_tvshow:
             sub_info = core.utils.extract_season_episode(name)
@@ -318,10 +338,11 @@ def __prepare_results(core, meta, results):
                 matching_offset = _match_numbers(cleaned_file_nameparts, cleaned_nameparts)
 
         return (
+            prerelease_rank,
             not x['lang'] == meta.preferredlanguage,
             meta.languages.index(x['lang']),
             not x['sync'] == 'true',
-            -(core.difflib.SequenceMatcher(None, cleaned_file_nameparts, cleaned_nameparts).ratio() + matching_offset),
+            -(core.difflib.SequenceMatcher(None, cleaned_file_nameparts, cleaned_nameparts).ratio() + matching_offset - release_mismatch_penalty),
             -sum(i in nameparts for i in release_list) * 10,
             -sum(i in nameparts for i in quality_list) * 10,
             -sum(i in nameparts for i in codec_list) * 10,
