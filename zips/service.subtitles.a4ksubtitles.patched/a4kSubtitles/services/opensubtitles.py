@@ -101,9 +101,8 @@ def build_search_requests(core, service_name, meta):
         return []
 
     lang_ids = core.utils.get_lang_ids(meta.languages, core.kodi.xbmc.ISO_639_1)
-    requests = []
 
-    def add_request(params):
+    def build_request(params, next_request=None):
         request = {
             'method': 'GET',
             'url': __api_url + '/subtitles',
@@ -111,7 +110,18 @@ def build_search_requests(core, service_name, meta):
         }
 
         __set_api_headers(core, service_name, request, token_cache)
-        requests.append(request)
+        if next_request is not None:
+            def fallback_if_empty(response):
+                try:
+                    payload = core.json.loads(response.text)
+                    if payload.get('data'):
+                        return None
+                except Exception:
+                    return None
+                return next_request
+
+            request['validate'] = fallback_if_empty
+        return request
 
     if meta.is_tvshow:
         params = {
@@ -125,8 +135,7 @@ def build_search_requests(core, service_name, meta):
         if meta.filehash:
             params['moviehash'] = meta.filehash
 
-        add_request(params)
-        return requests
+        return [build_request(params)]
 
     base_params = {
         'languages': ','.join(lang_ids),
@@ -140,11 +149,17 @@ def build_search_requests(core, service_name, meta):
     title = meta.title
     title_with_year = '%s %s' % (title, meta.year) if meta.year else title
 
-    add_request(dict(base_params, query=title_with_year, imdb_id=imdb_id, year=meta.year))
-    add_request(dict(base_params, query=title, imdb_id=imdb_id))
-    add_request(dict(base_params, query=title))
+    fallback_title_only = build_request(dict(base_params, query=title))
+    fallback_title_imdb = build_request(
+        dict(base_params, query=title, imdb_id=imdb_id),
+        next_request=fallback_title_only
+    )
+    strict_request = build_request(
+        dict(base_params, query=title_with_year, imdb_id=imdb_id, year=meta.year),
+        next_request=fallback_title_imdb
+    )
 
-    return requests
+    return [strict_request]
 
 def parse_search_response(core, service_name, meta, response):
     try:
