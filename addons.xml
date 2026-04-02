@@ -556,7 +556,7 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
         </news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.8" provider-name="Unknown">
+    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.9" provider-name="Unknown">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -581,6 +581,12 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
                 <screenshot>screenshot-03.png</screenshot>
             </assets>
             <news>
+[v3.23.9]:
+  * Fix OpenSubtitles download retries and cleanup after failed downloads.
+  * Improve subtitle ranking for prerelease and release-family mismatches.
+  * Add resilient OpenSubtitles movie fallback search when year metadata is wrong.
+  * Show a notification when an AI or machine translated subtitle is selected.
+
 [v3.23.6]:
   * Add targeted search pipeline logging for API-mode pre-play debugging, including raw service results and each prepare/filter stage.
 
