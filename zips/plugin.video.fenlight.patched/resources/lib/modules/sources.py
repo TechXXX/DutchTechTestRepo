@@ -3,6 +3,7 @@ import json
 import re
 import time
 import traceback
+from difflib import SequenceMatcher
 from threading import Thread
 import itertools
 from windows.base_window import open_window, create_window
@@ -47,8 +48,11 @@ main_line = '%s[CR]%s[CR]%s'
 int_window_prop = 'fenlight.internal_results.%s'
 scraper_timeout = 25
 a4k_subtitles_addon_path = 'special://home/addons/service.subtitles.a4ksubtitles.patched'
-subtitle_autoplay_probe_limit = 10
+subtitle_autoplay_probe_limit = 50
 release_group_stopwords = {'proper', 'repack', 'rerip', 'internal', 'multi', 'dubbed', 'subbed', 'readnfo', 'limited', 'extended', 'remux', 'hybrid', 'hdr', 'dv', 'uhd'}
+release_group_suffix_stopwords = {'eztv', 'eztvx', 'eztvx.to', 'ettv', 'tgx', 'torrentgalaxy', 'v2', 'v3', 'v4'}
+release_group_domain_stopwords = {'to', 'com', 'org', 'net', 'cc', 'io', 'me'}
+release_group_extension_stopwords = {'mkv', 'mp4', 'avi', 'ts', 'm2ts', 'srt', 'sub', 'ass', 'ssa'}
 filter_keys = {'hevc': '[B]HEVC[/B]', '3d': '[B]3D[/B]', 'hdr': '[B]HDR[/B]', 'dv': '[B]D/VISION[/B]', 'av1': '[B]AV1[/B]', 'enhanced_upscaled': '[B]AI ENHANCED/UPSCALED[/B]'}
 preference_values = {0:100, 1:50, 2:20, 3:10, 4:5, 5:2}
 
@@ -318,9 +322,6 @@ class Sources():
 			languages = [i for i in languages if i not in (None, '', 'none')]
 			if not languages and preferred_language not in (None, '', 'none'): languages = [preferred_language]
 			if not languages: return None
-			# Match the last known-good pre-play behavior: probe availability with English
-			# releases while still honoring the user's preferred subtitle language later.
-			if languages == ['Dutch']: languages = ['English']
 			if preferred_language in (None, '', 'none'): preferred_language = languages[0]
 			return {'action': 'search', 'languages': ','.join(languages), 'preferredlanguage': preferred_language}
 		except: return None
@@ -348,11 +349,12 @@ class Sources():
 		source_norm = self._normalize_release_name(source_name)
 		source_group = self._extract_release_group(source_name)
 		best_score, matched_names = 0, []
-		for result in results:
+		for result_index, result in enumerate(results):
 			candidate_names = self._a4k_result_names(result)
 			for candidate_name in candidate_names:
 				score = self._subtitle_source_match_score(source_norm, source_group, candidate_name)
 				if score <= 0: continue
+				score = self._apply_subtitle_candidate_priority(score, source_group, candidate_name, result_index)
 				if score > best_score:
 					best_score = score
 					matched_names = [candidate_name]
@@ -360,6 +362,14 @@ class Sources():
 					matched_names.append(candidate_name)
 		if matched_names: return matched_names, best_score
 		return [i for i in list(itertools.chain.from_iterable(self._a4k_result_names(result) for result in results)) if i][:3], 0
+
+	def _apply_subtitle_candidate_priority(self, score, source_group, subtitle_name, result_index):
+		subtitle_group = self._extract_release_group(subtitle_name)
+		if source_group and subtitle_group and source_group == subtitle_group:
+			# Prefer the earliest subtitle-backed release group in the result list.
+			position_bonus = max(0, 20 - result_index)
+			return min(100, score + position_bonus)
+		return score
 
 	def _a4k_result_names(self, result):
 		names = []
@@ -392,15 +402,42 @@ class Sources():
 	def _subtitle_source_match_score(self, source_norm, source_group, subtitle_name):
 		subtitle_norm = self._normalize_release_name(subtitle_name)
 		if not source_norm or not subtitle_norm: return 0
-		if source_norm == subtitle_norm: return 100
-		if subtitle_norm in source_norm or source_norm in subtitle_norm: return 80
 		subtitle_group = self._extract_release_group(subtitle_name)
-		if source_group and subtitle_group and source_group == subtitle_group: return 60
+		if source_norm == subtitle_norm: return 100
+		source_tokens = [i for i in source_norm.split('.') if i]
+		subtitle_tokens = [i for i in subtitle_norm.split('.') if i]
+		source_tail = self._effective_name_tail(source_tokens)
+		subtitle_tail = self._effective_name_tail(subtitle_tokens)
+		if source_group and subtitle_group:
+			if source_group != subtitle_group: return 0
+			if subtitle_norm in source_norm or source_norm in subtitle_norm: return 98
+			tail_score = SequenceMatcher(None, source_tail, subtitle_tail).ratio() if source_tail and subtitle_tail else 0.0
+			ratio_score = SequenceMatcher(None, source_norm, subtitle_norm).ratio()
+			confidence = (tail_score * 0.75) + (ratio_score * 0.25)
+			if confidence >= 0.97: return 98
+			if confidence >= 0.9: return 95
+			if confidence >= 0.82: return 92
+			if confidence >= 0.72: return 88
+			return 84
+		if subtitle_norm in source_norm or source_norm in subtitle_norm: return 95
+		if source_tail and subtitle_tail:
+			tail_score = SequenceMatcher(None, source_tail, subtitle_tail).ratio()
+			ratio_score = SequenceMatcher(None, source_norm, subtitle_norm).ratio()
+			confidence = (tail_score * 0.75) + (ratio_score * 0.25)
+			if confidence >= 0.9: return 72
+			if confidence >= 0.82: return 64
+			if confidence >= 0.74: return 55
 		return 0
+
+	def _effective_name_tail(self, tokens, size=4):
+		filtered = [i for i in tokens if i not in release_group_stopwords and i not in release_group_suffix_stopwords and not re.fullmatch(r'v\d+', i)]
+		if not filtered: return ''
+		return '.'.join(filtered[-size:])
 
 	def _normalize_release_name(self, name):
 		if not name: return ''
 		name = clean_file_name(name).lower()
+		name = re.sub(r'\[[^\]]+\]', '', name)
 		name = re.sub(r'\.(mkv|mp4|avi|ts|m2ts|srt|sub|ass|ssa)$', '', name)
 		name = re.sub(r'[^a-z0-9]+', '.', name).strip('.')
 		return name
@@ -411,6 +448,10 @@ class Sources():
 		parts = [i for i in name.split('.') if i]
 		for token in reversed(parts):
 			if token in release_group_stopwords: continue
+			if token in release_group_suffix_stopwords: continue
+			if token in release_group_domain_stopwords: continue
+			if token in release_group_extension_stopwords: continue
+			if re.fullmatch(r'v\d+', token): continue
 			if token.isdigit(): continue
 			if len(token) < 2: continue
 			return token
