@@ -398,28 +398,37 @@ class Sources():
 		source_name = item.get('name', '') or item.get('display_name', '') or ''
 		source_norm = self._normalize_release_name(source_name)
 		source_group = self._extract_release_group(source_name)
-		best_score, matched_names = 0, []
+		best_score, best_result_index, matched_names = 0, None, []
 		for result_index, result in enumerate(results):
 			candidate_names = self._a4k_result_names(result)
+			result_best_score, result_best_names = 0, []
 			for candidate_name in candidate_names:
 				score = self._subtitle_source_match_score(source_norm, source_group, candidate_name)
 				if score <= 0: continue
-				score = self._apply_subtitle_candidate_priority(score, source_group, candidate_name, result_index)
-				if score > best_score:
-					best_score = score
-					matched_names = [candidate_name]
-				elif score == best_score and not candidate_name in matched_names:
-					matched_names.append(candidate_name)
-		if matched_names: return matched_names, best_score
+				score = self._apply_subtitle_candidate_priority(score, source_group, candidate_name)
+				if score > result_best_score:
+					result_best_score = score
+					result_best_names = [candidate_name]
+				elif score == result_best_score and not candidate_name in result_best_names:
+					result_best_names.append(candidate_name)
+			if result_best_score <= 0: continue
+			if best_result_index == None or result_index < best_result_index or (result_index == best_result_index and result_best_score > best_score):
+				best_result_index = result_index
+				best_score = result_best_score
+				matched_names = result_best_names
+		if matched_names: return matched_names, self._subtitle_probe_result_score(best_result_index, best_score)
 		return [i for i in list(itertools.chain.from_iterable(self._a4k_result_names(result) for result in results)) if i][:3], 0
 
-	def _apply_subtitle_candidate_priority(self, score, source_group, subtitle_name, result_index):
+	def _apply_subtitle_candidate_priority(self, score, source_group, subtitle_name):
 		subtitle_group = self._extract_release_group(subtitle_name)
 		if source_group and subtitle_group and source_group == subtitle_group:
-			# Prefer the earliest subtitle-backed release group in the result list.
-			position_bonus = max(0, 20 - result_index)
-			return min(100, score + position_bonus)
+			return min(100, score + 8)
 		return score
+
+	def _subtitle_probe_result_score(self, result_index, match_score):
+		rank_bonus = max(0, 100 - (result_index * 5))
+		match_bonus = min(9, int(match_score / 12))
+		return rank_bonus + match_bonus
 
 	def _a4k_result_names(self, result):
 		names = []
