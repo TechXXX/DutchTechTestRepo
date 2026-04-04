@@ -113,7 +113,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.14" provider-name="Unknown">
+    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.15" provider-name="Unknown">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -160,7 +160,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="repository.dutchtechtestrepo" name="DutchTechTestRepo" provider-name="DutchTech" version="1.0.2">
+    <addon id="repository.dutchtechtestrepo" name="DutchTechTestRepo" provider-name="DutchTech" version="1.0.3">
         <extension point="xbmc.addon.repository" name="DutchTechTestRepo">
             <dir>
                 <info compressed="false">https://raw.githubusercontent.com/TechXXX/DutchTechTestRepo/main/addons.xml</info>
