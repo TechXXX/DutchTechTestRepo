@@ -307,7 +307,7 @@ def __prepare_results(core, meta, results):
 
         return offset
 
-    def _name_match_score(candidate_name, source_release_group):
+    def _name_match_score(candidate_name, cleaned_source_nameparts, source_release_group):
         candidate_parts = core.re.split(regexsplitwords, candidate_name.lower())
         cleaned_candidate_parts = list(filter(len, map(_filter_name, candidate_parts)))
         candidate_matching_offset = 0
@@ -338,9 +338,9 @@ def __prepare_results(core, meta, results):
                 candidate_matching_offset -= 0.5
 
             if candidate_matching_offset == 0:
-                candidate_matching_offset = _match_numbers(cleaned_file_nameparts, cleaned_candidate_parts)
+                candidate_matching_offset = _match_numbers(cleaned_source_nameparts, cleaned_candidate_parts)
 
-        return core.difflib.SequenceMatcher(None, cleaned_file_nameparts, cleaned_candidate_parts).ratio() + candidate_matching_offset - candidate_release_mismatch_penalty
+        return core.difflib.SequenceMatcher(None, cleaned_source_nameparts, cleaned_candidate_parts).ratio() + candidate_matching_offset - candidate_release_mismatch_penalty
 
     def sorter(x):
         name = x['name'].lower()
@@ -369,12 +369,12 @@ def __prepare_results(core, meta, results):
         source_is_prerelease = source_release_group is prerelease_group
         subtitle_is_prerelease = subtitle_release_group is prerelease_group or any(token in cleaned_nameparts for token in prerelease_group)
         prerelease_rank = 0 if source_is_prerelease else int(subtitle_is_prerelease)
-        direct_name_score = _name_match_score(name, source_release_group)
+        direct_name_score = _name_match_score(name, cleaned_file_nameparts, source_release_group)
         comment_name_score = 0
         comment_only_rank = 0
         comments = x.get('comments', '')
         if comments and direct_name_score < 0.9:
-            comment_name_score = max((_name_match_score(candidate, source_release_group) for candidate in __comment_candidate_names(core, comments)), default=0)
+            comment_name_score = max((_name_match_score(candidate, cleaned_file_nameparts, source_release_group) for candidate in __comment_candidate_names(core, comments)), default=0)
             if comment_name_score > direct_name_score:
                 comment_only_rank = 1
         effective_name_score = direct_name_score if comment_only_rank == 0 else comment_name_score - 0.02
