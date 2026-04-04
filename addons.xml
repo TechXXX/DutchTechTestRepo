@@ -113,7 +113,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.12" provider-name="Unknown">
+    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.13" provider-name="Unknown">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -138,6 +138,9 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
                 <screenshot>screenshot-03.png</screenshot>
             </assets>
             <news>
+[v3.23.13]:
+  * Fix comment-fallback ranking crash in final subtitle selection.
+
 [v3.23.12]:
   * Use OpenSubtitles uploader comments as a fallback-only compatibility signal after direct filename matching.
 
