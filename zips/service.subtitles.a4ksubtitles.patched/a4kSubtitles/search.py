@@ -290,14 +290,16 @@ def __prepare_results(core, meta, results):
     def sorter(x):
         name = x['name'].lower()
         nameparts = core.re.split(regexsplitwords, name)
+        action_args = x.get('action_args', {})
 
         # Add episode number to action_args to detect the desired episode later during sub extraction.
-        x['action_args'].setdefault("episodeid", meta.episode.zfill(3) if meta.episode else "")
+        action_args.setdefault("episodeid", meta.episode.zfill(3) if meta.episode else "")
 
         cleaned_nameparts = list(filter(len, map(_filter_name, nameparts)))
         cleaned_file_nameparts = list(filter(len, map(_filter_name, meta_nameparts)))
         matching_offset = 0
         release_mismatch_penalty = 0
+        translated_fallback_rank = int(bool(action_args.get('ai_translated', False) or action_args.get('machine_translated', False)))
 
         source_release_group = None
         subtitle_release_group = None
@@ -339,6 +341,7 @@ def __prepare_results(core, meta, results):
 
         return (
             prerelease_rank,
+            translated_fallback_rank,
             not x['lang'] == meta.preferredlanguage,
             meta.languages.index(x['lang']),
             not x['sync'] == 'true',
