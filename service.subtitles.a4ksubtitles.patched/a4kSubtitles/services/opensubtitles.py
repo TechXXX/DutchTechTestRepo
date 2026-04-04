@@ -194,6 +194,7 @@ def parse_search_response(core, service_name, meta, response):
             'service': service.display_name,
             'lang': language,
             'name': filename,
+            'comments': result.get('comments', ''),
             'rating': int(round(float(result['ratings']) / 2)),
             'lang_code': core.utils.get_lang_id(language, core.kodi.xbmc.ISO_639_1),
             'sync': 'true' if result.get('moviehash_match', False) else 'false',

@@ -1,5 +1,25 @@
 # -*- coding: utf-8 -*-
 
+def __comment_candidate_names(core, comments):
+    if not comments:
+        return []
+
+    names = []
+    lines = [line.strip() for line in core.re.split(r'[\r\n]+', comments) if line and line.strip()]
+    for line in lines:
+        line = core.re.sub(r'^[^:]+:\s*', '', line).strip()
+        line = core.re.sub(r'\s*\([^)]*\)\s*$', '', line).strip()
+        line = line.strip(' -|,;')
+        if not line:
+            continue
+        if len(core.re.findall(r'[A-Za-z0-9]', line)) < 6:
+            continue
+        if not any(sep in line for sep in ('.', '-', ' ')):
+            continue
+        if line not in names:
+            names.append(line)
+    return names
+
 def __sample_result_names(results, limit=3):
     sample_names = []
     for result in results:
@@ -287,6 +307,41 @@ def __prepare_results(core, meta, results):
 
         return offset
 
+    def _name_match_score(candidate_name):
+        candidate_parts = core.re.split(regexsplitwords, candidate_name.lower())
+        cleaned_candidate_parts = list(filter(len, map(_filter_name, candidate_parts)))
+        candidate_matching_offset = 0
+        candidate_release_mismatch_penalty = 0
+
+        candidate_release_group = None
+        for group in release_groups:
+            if any(token in cleaned_candidate_parts for token in group):
+                candidate_release_group = group
+                break
+
+        if source_release_group and candidate_release_group and source_release_group is not candidate_release_group:
+            candidate_release_mismatch_penalty += 1.2
+
+        if meta.is_tvshow:
+            sub_info = core.utils.extract_season_episode(candidate_name)
+
+            is_season = sub_info.season and sub_info.season == meta.season.zfill(3)
+            is_episode = sub_info.episode and sub_info.episode == meta.episode.zfill(3)
+
+            if is_season and not sub_info.episode:
+                candidate_matching_offset += 0.6
+            if is_season and is_episode:
+                candidate_matching_offset += 0.4
+            elif meta.episode and int(meta.episode) in sub_info.episodes_range:
+                candidate_matching_offset += 0.3
+            elif sub_info.season and sub_info.episode:
+                candidate_matching_offset -= 0.5
+
+            if candidate_matching_offset == 0:
+                candidate_matching_offset = _match_numbers(cleaned_file_nameparts, cleaned_candidate_parts)
+
+        return core.difflib.SequenceMatcher(None, cleaned_file_nameparts, cleaned_candidate_parts).ratio() + candidate_matching_offset - candidate_release_mismatch_penalty
+
     def sorter(x):
         name = x['name'].lower()
         nameparts = core.re.split(regexsplitwords, name)
@@ -297,8 +352,6 @@ def __prepare_results(core, meta, results):
 
         cleaned_nameparts = list(filter(len, map(_filter_name, nameparts)))
         cleaned_file_nameparts = list(filter(len, map(_filter_name, meta_nameparts)))
-        matching_offset = 0
-        release_mismatch_penalty = 0
         translated_fallback_rank = int(bool(action_args.get('ai_translated', False) or action_args.get('machine_translated', False)))
 
         source_release_group = None
@@ -312,40 +365,28 @@ def __prepare_results(core, meta, results):
                 subtitle_release_group = group
                 break
 
-        if source_release_group and subtitle_release_group and source_release_group is not subtitle_release_group:
-            release_mismatch_penalty += 1.2
-
         prerelease_group = release_groups[-1]
         source_is_prerelease = source_release_group is prerelease_group
         subtitle_is_prerelease = subtitle_release_group is prerelease_group or any(token in cleaned_nameparts for token in prerelease_group)
         prerelease_rank = 0 if source_is_prerelease else int(subtitle_is_prerelease)
-
-        if meta.is_tvshow:
-            sub_info = core.utils.extract_season_episode(name)
-
-            is_season = sub_info.season and sub_info.season == meta.season.zfill(3)
-            is_episode = sub_info.episode and sub_info.episode == meta.episode.zfill(3)
-
-            # Handle the parsed season and episode.
-            if is_season and not sub_info.episode:
-                matching_offset += 0.6
-            if is_season and is_episode:
-                matching_offset += 0.4
-            elif meta.episode and int(meta.episode) in sub_info.episodes_range:
-                matching_offset += 0.3
-            elif sub_info.season and sub_info.episode:
-                matching_offset -= 0.5
-
-            if matching_offset == 0:
-                matching_offset = _match_numbers(cleaned_file_nameparts, cleaned_nameparts)
+        direct_name_score = _name_match_score(name)
+        comment_name_score = 0
+        comment_only_rank = 0
+        comments = x.get('comments', '')
+        if comments and direct_name_score < 0.9:
+            comment_name_score = max((_name_match_score(candidate) for candidate in __comment_candidate_names(core, comments)), default=0)
+            if comment_name_score > direct_name_score:
+                comment_only_rank = 1
+        effective_name_score = direct_name_score if comment_only_rank == 0 else comment_name_score - 0.02
 
         return (
             prerelease_rank,
             translated_fallback_rank,
+            comment_only_rank,
             not x['lang'] == meta.preferredlanguage,
             meta.languages.index(x['lang']),
             not x['sync'] == 'true',
-            -(core.difflib.SequenceMatcher(None, cleaned_file_nameparts, cleaned_nameparts).ratio() + matching_offset - release_mismatch_penalty),
+            -effective_name_score,
             -sum(i in nameparts for i in release_list) * 10,
             -sum(i in nameparts for i in quality_list) * 10,
             -sum(i in nameparts for i in codec_list) * 10,
