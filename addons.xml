@@ -121,7 +121,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Selector Test" version="3.23.17" provider-name="Unknown">
+    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Selector Test" version="3.23.18" provider-name="Unknown">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -146,6 +146,9 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
                 <screenshot>screenshot-03.png</screenshot>
             </assets>
             <news>
+[v3.23.18]:
+  * Add universal [AI]/[MT] badges to manual search subtitle rows so translated results are clearly marked across skins.
+
 [v3.23.17]:
   * Prefer full OpenSubtitles release names for selector matching.
   * Keep API-mode settings overrides compatible with Kodi's read-only Addon object.
