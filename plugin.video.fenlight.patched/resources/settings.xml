@@ -2,7 +2,7 @@
 <settings>
 	<!-- General -->
 	<category label="General">
-		<setting label="Fen Light Patched uses it's own settings window." type="text" enable="false" />
-		<setting label="Open Fen Light Patched Settings..." type="action" option="close" action="RunPlugin(plugin://plugin.video.fenlight.patched/?mode=open_settings)" />
+		<setting label="Fen Light Selector Test uses its own settings window." type="text" enable="false" />
+		<setting label="Open Fen Light Selector Test Settings..." type="action" option="close" action="RunPlugin(plugin://plugin.video.fenlight.patched/?mode=open_settings)" />
 	</category>
 </settings>
