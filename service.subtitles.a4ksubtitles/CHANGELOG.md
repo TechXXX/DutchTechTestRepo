@@ -1,3 +1,6 @@
+> Maintainer note: Read `README.md` first for the current file map and role of
+> this baseline copy. This file is release history only.
+
 * [v3.23.8](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.23.8):
   * Move full release history into CHANGELOG.md so repository metadata stays compact.
 

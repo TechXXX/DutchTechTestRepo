@@ -1,77 +1,117 @@
 # DutchTechTestRepo
 
-This directory is a standalone Kodi test repository for DutchTech packages on GitHub Pages.
+This repository is the GitHub Pages test repo for DutchTech Kodi packages.
 
-## Initial contents
+For the subtitle-selector migration, this repo matters because it is the test
+distribution channel for the patched Fenlight and patched a4k addons.
 
-- `repository.dutchtechtestrepo` (`DutchTechTestRepo`) - version `1.0.0`
+## Addons In This Repo
 
-The repository starts intentionally empty apart from its repository add-on. Add test add-ons later by dropping their release zip into the repo root and publishing an update.
+Current source-tree versions when this document was updated:
+
+- `plugin.video.fenlight` `2.0.13`
+  Baseline Fenlight package.
+- `plugin.video.fenlight.patched` `2.0.24`
+  Test build that bundles the selector locally and uses the centralized
+  subtitle-aware retry-pool architecture.
+- `service.subtitles.a4ksubtitles` `3.23.8`
+  Baseline a4k package kept as reference.
+- `service.subtitles.a4ksubtitles.patched` `3.23.18`
+  Test subtitle addon used with selector-aware Fenlight.
+- `service.kodi.synctool`
+  Separate Google Drive sync addon that is unrelated to subtitle-selector work.
+- `repository.dutchtechtestrepo`
+  The repository addon that Kodi installs first.
 
 ## Layout
 
-- `repository.dutchtechtestrepo/`: source for the test repository add-on
-- `zips/`: generated installable package archives
-- `addons.xml`: repository metadata consumed by Kodi
-- `addons.xml.md5`: checksum for `addons.xml`
-- `scripts/build_repo.py`: full repo publish, including repository version bump
-- `scripts/publish_addon_update.py`: import a new addon zip without bumping the repository addon
+- `plugin.video.fenlight.patched/`
+  Unpacked patched Fenlight source.
+- `service.subtitles.a4ksubtitles.patched/`
+  Unpacked patched a4k source.
+- `plugin.video.fenlight/`
+  Baseline Fenlight source for comparison or non-patched shipping.
+- `service.subtitles.a4ksubtitles/`
+  Baseline a4k source for comparison or non-patched shipping.
+- `service.kodi.synctool/`
+  Unrelated sync addon.
+- `scripts/`
+  Repo build and publish helpers.
+- `zips/`
+  Generated installable addon packages. Do not hand-edit these.
+- `addons.xml`
+  Kodi metadata for every addon in the repo.
+- `addons.xml.md5`
+  Checksum for `addons.xml`.
 
-## Publish workflows
+## Docs To Read First
 
-### Full repo publish
+For selector work in this repo, read:
 
-```bash
-python3 scripts/build_repo.py --base-url https://TechXXX.github.io/DutchTechTestRepo/
-```
+1. `README.md`
+2. `scripts/README.md`
+3. `plugin.video.fenlight.patched/resources/lib/modules/sources.md`
+4. `plugin.video.fenlight.patched/resources/lib/modules/player.md`
+5. `service.subtitles.a4ksubtitles.patched/README.md`
 
-Use this when you change the repository itself, for example:
+## Selector-Relevant Addon Responsibilities
 
-- repository metadata or structure
-- repository artwork
-- repository install flow
+### `plugin.video.fenlight.patched`
 
-This script:
+This addon now owns:
 
-- rebuilds packages and metadata for the whole repo
-- bumps `repository.dutchtechtestrepo`
-- commits and pushes to `main`
+- source scraping and filtering
+- one-shot subtitle gather orchestration
+- selector-backed retry-pool promotion
+- playback resolution and player handoff
 
-You can also set `KODI_REPO_BASE_URL` instead of passing `--base-url`. Repository metadata defaults to `https://raw.githubusercontent.com/TechXXX/DutchTechTestRepo/main/`.
+It should not own the actual subtitle policy rules. Those belong in the
+selector.
 
-### Add-on update publish
+### `service.subtitles.a4ksubtitles.patched`
 
-Drop a new add-on zip in the repo root and run:
+This addon now owns:
 
-```bash
-python3 scripts/publish_addon_update.py
-```
+- subtitle provider queries
+- OpenSubtitles translation-flag capture
+- subtitle ordering on the addon side
+- manual-search UI badges like `[AI]` and `[MT]`
+- translated-subtitle fallback notifications when a subtitle is actually chosen
 
-This script:
+It should not own Fenlight playback logic.
 
-- imports the new add-on zip from the repo root
-- replaces the matching unpacked add-on source directory
-- rebuilds only that add-on package under `zips/<addon-id>/`
-- regenerates `addons.xml` and `addons.xml.md5`
-- commits and pushes to `main`
+## Script Workflows
 
-## Publish
+The scripts are documented in `scripts/README.md`.
 
-1. Push this directory to `TechXXX/DutchTechTestRepo`.
-2. Enable GitHub Pages for the repository.
-3. Rebuild with your real GitHub Pages URL.
-4. Download the current `repository.dutchtechtestrepo-<version>.zip` from the site in a browser.
-5. Install that local zip file in Kodi.
+Short version:
 
-The repository add-on itself is configured to fetch metadata and zips from `https://raw.githubusercontent.com/TechXXX/DutchTechTestRepo/main/`.
+- use `scripts/build_repo.py` when the repository addon itself or the overall
+  repo metadata changes
+- use `scripts/publish_addon_update.py` when publishing a packaged addon update
+  without bumping the repository addon version
 
-## Important note about GitHub Pages
+Important future-agent nuance:
 
-GitHub Pages serves direct files but does not expose a browsable directory listing for `zips/`.
-That means Kodi will not show hosted zip files when you browse a GitHub Pages source in `Install from zip file`.
+- the `publish_addon_update.py` command-line flow is built around the "drop a
+  new addon zip in the repo root" workflow
+- if you have already edited the unpacked source tree in place, you may need to
+  call that script's helper functions or regenerate `zips/<addon-id>/`
+  manually instead of relying on the CLI import step
 
-Use this flow instead:
+## Generated Output Rules
 
-1. Download the current `repository.dutchtechtestrepo-<version>.zip` directly from the site.
-2. In Kodi, install that local zip file.
-3. Then use `Install from repository` for `DutchTechTestRepo`.
+- treat `zips/` as generated output
+- if addon-local docs change, regenerate the matching package under `zips/`
+- if `addon.xml` changes, also regenerate `addons.xml`
+- do not edit `addons.xml.md5` by hand
+
+## Scope Guard Rails
+
+- subtitle-selector migration work belongs primarily in:
+  - `plugin.video.fenlight.patched`
+  - `service.subtitles.a4ksubtitles.patched`
+- baseline addons are reference points, not the main landing zone for new
+  selector behavior
+- unrelated addons such as `service.kodi.synctool` should only be touched when
+  intentionally working on that addon

@@ -1,5 +1,8 @@
 # Kodi Sync Tool Changelog
 
+> Maintainer note: Read `README.md` first for the current runtime flow and file
+> map. This file is release history only.
+
 ## v0.2.39
 - Move full release history into CHANGELOG.md so repository metadata stays compact.
 

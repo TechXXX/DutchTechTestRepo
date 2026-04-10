@@ -1,3 +1,6 @@
+> Maintainer note: Read `README.md` first for the current file map and shipped
+> behavior. This file is release history only.
+
 * [v3.23.18](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.18):
   * Add universal [AI]/[MT] badges to manual search subtitle rows so translated results are clearly marked across skins.
 

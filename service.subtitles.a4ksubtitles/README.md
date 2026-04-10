@@ -1,60 +1,82 @@
-<img align="left" width="115px" height="115px" src="icon.png">
+# a4kSubtitles Reference Copy
 
-# a4kSubtitles
-[![Kodi version](https://img.shields.io/badge/kodi%20versions-20--21-blue)](https://kodi.tv/)
+This directory is the unpacked baseline a4k subtitle addon kept in the test
+repo as a comparison point.
 
-### General Status
-[![Background Service](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-service.yml/badge.svg)](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-service.yml)
-[![API](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-api.yml/badge.svg)](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-api.yml)
-[![Search](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-search.yml/badge.svg)](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-search.yml)
-[![TVShows](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-tvshow.yml/badge.svg)](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-tvshow.yml)
+It is useful when future agents need to separate:
 
-### Providers Status
-[![Addic7ed](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-addic7ed.yml/badge.svg)](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-addic7ed.yml)
-[![BSPlayer](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-bsplayer.yml/badge.svg)](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-bsplayer.yml)
-[![OpenSubtitles](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-opensubtitles.yml/badge.svg)](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-opensubtitles.yml)
-[![Podnadpisi.NET](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-podnadpisi.yml/badge.svg)](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-podnadpisi.yml)
-<!-- [![SubDL](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-subdl.yml/badge.svg)](https://github.com/a4k-openproject/a4kSubtitles/actions/workflows/cron-tests-subdl.yml) -->
+- upstream-like a4k behavior
+- test-repo patch behavior
+- selector-migration-specific changes
 
-## Description
+## Why This Copy Still Matters
 
-Subtitle addon for KODI with support for multiple subtitle services:
-* Addic7ed
-* BSPlayer
-* OpenSubtitles
-* Podnadpisi.NET
-* SubDL
-* SubSource
+Even though selector work should normally land in the patched addon, this
+baseline copy is valuable for diffing and rollback analysis.
 
-## Configuration
-![configuration](https://media.giphy.com/media/kewuE4BgfOnFin0vEC/source.gif)
+Typical uses:
 
-## Installation
+- compare search or download behavior against the patched addon
+- confirm whether a bug was introduced by the patch set
+- understand the original addon structure before repo-specific changes
 
-Steps to install a4kSubtitles:
-1. Go to the KODI **File manager**.
-2. Click on **Add source**.
-3. The path for the source is https://a4k-openproject.github.io/a4kSubtitles/packages/
-4. (Optional) Name it **a4kSubtitles-repo**.
-5. Head to **Addons**.
-6. Select **Install from zip file**.
-7. When it asks for the location select **a4kSubtitles-repo** and install `a4kSubtitles-repository.zip`.
-8. Go back to **Addons** and select **Install from repository**
-9. Select the **a4kSubtitles** menu item
+## Execution Model
 
-## Preview
-![usage](https://media.giphy.com/media/QTmhgEJTpTPTPxByfj/source.gif)
+The baseline addon follows the same broad shape as the patched copy:
 
-## Contribution
+1. `main.py`
+   Regular Kodi plugin entrypoint.
+2. `main_service.py`
+   Background subtitle-service entrypoint.
+3. `a4kSubtitles/core.py`
+   Routes Kodi actions like `search` and `download`.
+4. `a4kSubtitles/search.py`
+   Provider auth, search, normalization, filtering, and ordering.
+5. `a4kSubtitles/download.py`
+   Download and archive extraction logic.
+6. `a4kSubtitles/service.py`
+   Auto-search / auto-download loop during playback.
 
-Configure hooks for auto update of `addons.xml`:
-```sh
-git config core.hooksPath .githooks
-```
-## License
+## File Map
 
-MIT
+- `addon.xml`
+  Kodi metadata and addon version.
+- `main.py`
+  Standard plugin execution path.
+- `main_service.py`
+  Starts the background subtitle service.
+- `a4kSubtitles/api.py`
+  API bridge for mocked execution and direct search/download calls.
+- `a4kSubtitles/core.py`
+  Central plugin action router.
+- `a4kSubtitles/search.py`
+  Provider orchestration and result preparation.
+- `a4kSubtitles/download.py`
+  File download and extraction flow.
+- `a4kSubtitles/service.py`
+  Playback-aware automatic subtitle logic.
+- `a4kSubtitles/services/opensubtitles.py`
+  OpenSubtitles request/response handling.
+- `a4kSubtitles/lib/kodi.py`
+  Kodi wrappers, settings, and listitem creation.
 
-## Icon
+## How To Use This Copy Safely
 
-Logo `quill` by Ramy Wafaa ([RoundIcons](https://roundicons.com))
+- Treat this addon as reference material first.
+- Do not land selector-specific behavior here unless you intentionally want the
+  baseline package to gain it too.
+- When debugging a patch regression, diff this tree against
+  `service.subtitles.a4ksubtitles.patched/` before assuming the selector caused
+  it.
+
+## What Usually Differs In The Patched Copy
+
+The patched addon is where repo-specific subtitle-selector work lives, such as:
+
+- selector-oriented API-mode use with patched Fenlight
+- translation-aware result handling refinements
+- manual-search `[AI]` / `[MT]` badges
+- selector-migration behavior that is not part of the baseline addon story
+
+If you are unsure where a change belongs, start in the patched copy and only
+come back here if you are intentionally aligning the baseline addon too.
