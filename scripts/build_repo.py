@@ -213,6 +213,8 @@ def should_skip_file(addon_id: str, file_path: Path) -> bool:
         return True
     if "__MACOSX" in parts:
         return True
+    if "__pycache__" in parts or file_path.suffix == ".pyc":
+        return True
     if addon_id == REPO_ADDON_ID and file_path.name not in REPO_ALLOWED_FILES:
         return True
     return False
