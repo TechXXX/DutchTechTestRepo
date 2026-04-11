@@ -3,6 +3,14 @@ import os
 
 shadow_snapshot_dir = 'special://profile/addon_data/plugin.video.fenlight/subtitle_selector_shadow'
 
+def __replace_non_ascii_digits(text):
+    if not text:
+        return text
+    return ''.join(' ' if char.isdigit() and char not in '0123456789' else char for char in text)
+
+def __is_ascii_digit_token(token):
+    return bool(token) and all(char in '0123456789' for char in token)
+
 def __shadow_translate_path(core, path):
     try:
         return core.kodi.xbmcvfs.translatePath(path)
@@ -127,6 +135,7 @@ def __comment_candidate_names(core, comments):
     if not comments:
         return []
 
+    comments = __replace_non_ascii_digits(core.utils.unquote(comments))
     names = []
     lines = [line.strip() for line in core.re.split(r'[\r\n]+', comments) if line and line.strip()]
     for line in lines:
@@ -147,8 +156,9 @@ def __release_group_candidates(core, text, regexsplitwords, ignored_tokens):
     if not text:
         return []
 
-    raw_tokens = [token.strip().lower() for token in core.re.split(regexsplitwords, core.utils.unquote(text)) if token and token.strip()]
-    tokens = [token for token in raw_tokens if not token.isdigit() and token not in ignored_tokens]
+    normalized_text = __replace_non_ascii_digits(core.utils.unquote(text))
+    raw_tokens = [token.strip().lower() for token in core.re.split(regexsplitwords, normalized_text) if token and token.strip()]
+    tokens = [token for token in raw_tokens if not __is_ascii_digit_token(token) and token not in ignored_tokens]
     if not tokens:
         return []
 
@@ -167,7 +177,7 @@ def __comments_reference_release_group(core, comments, candidates, regexsplitwor
     if not comments or not candidates:
         return False
 
-    normalized_comments = core.re.sub(regexsplitwords, ' ', core.utils.unquote(comments).lower())
+    normalized_comments = core.re.sub(regexsplitwords, ' ', __replace_non_ascii_digits(core.utils.unquote(comments)).lower())
     normalized_comments = ' ' + core.re.sub(r'\s+', ' ', normalized_comments).strip() + ' '
     for candidate in candidates:
         normalized_candidate = ' ' + candidate.strip().lower() + ' '
@@ -470,8 +480,11 @@ def __prepare_results(core, meta, results):
         name_diff_ignore = media_exts + quality + codec + audio + color
         name_diff_ignore += ["multi", 'multiple', 'sub', 'subs', 'subtitle']
 
-        if x.isdigit():
+        x = __replace_non_ascii_digits(x).strip()
+        if __is_ascii_digit_token(x):
             x = str(int(x)).zfill(3)
+        elif x.isdigit():
+            x = ''
         elif x.lower() in name_diff_ignore:
             x = ''
         return x.lower()
@@ -479,8 +492,8 @@ def __prepare_results(core, meta, results):
     def _match_numbers(a, b):
         offset = 0
         for s in b:
-            s = core.re.sub(r'v[1-4]', "", s)
-            if not s.isdigit():
+            s = __replace_non_ascii_digits(core.re.sub(r'v[1-4]', "", s)).strip()
+            if not __is_ascii_digit_token(s):
                 continue
             elif meta.episode and s.zfill(3) == meta.episode.zfill(3):
                 offset += 0.4

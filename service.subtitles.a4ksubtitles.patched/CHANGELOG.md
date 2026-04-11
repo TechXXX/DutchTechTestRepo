@@ -1,6 +1,10 @@
 > Maintainer note: Read `README.md` first for the current file map and shipped
 > behavior. This file is release history only.
 
+* [v3.23.21](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.21):
+  * Prevent autoplay subtitle preparation from crashing when uploader comments contain Unicode digit separators such as `²`.
+  * Rewrite matching-stem runtime subtitle temp filenames before attach so Kodi shows a readable external subtitle name instead of collapsing to generic `(External)`.
+
 * [v3.23.20](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.20):
   * Migrate the Kodi settings dialog to the current schema so provider toggles and account fields no longer reset while switching categories.
   * Restore selector shadow snapshots for multi-provider runs, including paired Fenlight source snapshots and history-only runtime/manual subtitle snapshots.

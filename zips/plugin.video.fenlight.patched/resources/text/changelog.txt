@@ -1,5 +1,8 @@
 [COLOR darkgoldenrod]GOD BLESS HIM AND KEEP HIM SAFE.[/COLOR]
 
+[COLOR dodgerblue][B]Version 2.0.26[/B][/COLOR]
+- Ship Fen Light Patched with reuse language invoker disabled by default so updates stop re-enabling it for installs that expect it off.
+
 [COLOR dodgerblue][B]Version 2.0.21[/B][/COLOR]
 - Restored direct player playback for resolved sources to avoid playback failures on some Kodi/macOS installs.
 
