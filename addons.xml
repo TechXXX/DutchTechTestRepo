@@ -24,7 +24,7 @@
             <news>INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.26">
+    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.28">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -45,7 +45,12 @@
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v2.0.26]:
+            <news>[v2.0.28]:
+  * Keep the smoother autoplay handoff that waits for fullscreen before closing the resolver window, reducing the flash back to the skin start screen.
+  * Bridge selector playback metadata into Kodi properties so patched a4k can consume the exact selector-chosen subtitle for the active source at runtime.
+  * Trim the successful pre-player settle before player.run(...) to reduce startup latency without changing retry timing.
+
+[v2.0.26]:
   * Ship Fen Light Patched with reuse language invoker disabled by default so repo installs stop re-enabling it for setups that expect it off.
 
 [v2.0.25]:
@@ -127,7 +132,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.21" provider-name="Unknown">
+    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.23" provider-name="Unknown">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -152,6 +157,12 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
                 <screenshot>screenshot-03.png</screenshot>
             </assets>
             <news>
+[v3.23.23]:
+  * Consume Fenlight's selector-provided subtitle payload at runtime, keyed to the active playback source, before falling back to a fresh runtime search.
+  * Speed up selector-backed startup attachment by fast-polling during the first playback seconds and trying the forced selector subtitle before the IMDb-gated fallback search.
+  * On OpenSubtitles download 401, clear cached auth state, re-login once, and retry the same candidate so stale token failures recover automatically.
+  * Shift movie OpenSubtitles retrieval toward IMDb-first searches with filename-year correction fallback so bad metadata years no longer suppress valid subtitle hits.
+
 [v3.23.21]:
   * Prevent autoplay subtitle preparation from crashing when uploader comments contain Unicode digit separators such as ².
   * Rewrite matching-stem runtime subtitle temp filenames before attach so Kodi shows a readable external subtitle name instead of collapsing to generic (External).
