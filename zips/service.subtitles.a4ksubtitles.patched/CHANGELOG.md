@@ -1,6 +1,9 @@
 > Maintainer note: Read `README.md` first for the current file map and shipped
 > behavior. This file is release history only.
 
+* [v3.23.26](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.26):
+  * Bypass the persisted subtitle-results cache during API-mode searches so Fenlight pre-play subtitle gathers always use a fresh subtitle result set instead of stale runtime cache state.
+
 * Session note (2026-04-11):
   * Consume Fenlight's selector-provided subtitle payload at runtime, keyed to the active playback source, so autoplay now tries the exact source/subtitle pairing chosen by the centralized selector before falling back to a fresh runtime search.
   * Keep built-in subtitle stream preference intact while making selector-forced external subtitle attempts source-specific, so retrying from source 1 to source 2 carries the second source's matched subtitle instead of reusing stale runtime ranking.

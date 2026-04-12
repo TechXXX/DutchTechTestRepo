@@ -1,4 +1,4 @@
-<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.28">
+<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.30">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -19,7 +19,10 @@
             <icon>resources/media/fenlight_icon.png</icon>
             <fanart>resources/media/fenlight_fanart2.jpg</fanart>
         </assets>
-        <news>[v2.0.28]:
+        <news>[v2.0.30]:
+  * Clear local Kodi bookmark rows using the real plugin:// playback URLs so erase-bookmark actions target the active movie or episode instead of relying on the old broad filename match.
+
+[v2.0.28]:
   * Keep the smoother autoplay handoff that waits for fullscreen before closing the resolver window, reducing the flash back to the skin start screen.
   * Bridge selector playback metadata into Kodi properties so patched a4k can consume the exact selector-chosen subtitle for the active source at runtime.
   * Trim the successful pre-player settle before player.run(...) to reduce startup latency without changing retry timing.

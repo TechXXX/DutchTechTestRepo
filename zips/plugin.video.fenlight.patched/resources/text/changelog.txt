@@ -1,5 +1,8 @@
 [COLOR darkgoldenrod]GOD BLESS HIM AND KEEP HIM SAFE.[/COLOR]
 
+[COLOR dodgerblue][B]Version 2.0.30[/B][/COLOR]
+- Clear local Kodi bookmark rows using the real `plugin://plugin.video.fenlight.patched/...` playback URLs so erase-bookmark actions target the active movie or episode instead of relying on the old broad filename match.
+
 [COLOR dodgerblue][B]Session Note (2026-04-11, startup smoothing + selector runtime fix)[/B][/COLOR]
 - Keep the smoother autoplay handoff that waits for fullscreen before closing the resolver window, avoiding the flash back to the skin start screen while still shortening the settle around fullscreen.
 - Trim the successful pre-player settle before `player.run(...)` from `200 ms` to `50 ms` to shave a little startup latency without touching retry timing.
