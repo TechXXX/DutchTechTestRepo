@@ -1,4 +1,4 @@
-<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.33">
+<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.34">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -19,7 +19,10 @@
             <icon>resources/media/fenlight_icon.png</icon>
             <fanart>resources/media/fenlight_fanart2.jpg</fanart>
         </assets>
-        <news>[v2.0.33]:
+        <news>[v2.0.34]:
+  * Preserve meaningful technical bracket segments during bundled subtitle-selector normalization so release matching keeps cues like [1080p], codec tags, and year-style bracket tokens instead of discarding them as noise.
+
+[v2.0.33]:
   * Add TMDb collection-search support for movie searches so matching collection results can open directly into the related movie-set listing.
 
 [v2.0.32]:

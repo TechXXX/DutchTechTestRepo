@@ -17,7 +17,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.3`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package.
-- `plugin.video.fenlight.patched` `2.0.33`
+- `plugin.video.fenlight.patched` `2.0.34`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists.

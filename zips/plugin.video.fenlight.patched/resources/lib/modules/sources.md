@@ -64,6 +64,9 @@ This file should not own:
 - only one subtitle gather should happen per autoplay run/title
 - promoted subtitle-backed matches are limited to the best 5
 - raw source order is still kept behind the promoted pool as fallback
+- bundled selector normalization may preserve meaningful bracketed technical
+  segments like quality, codec, and year tokens when they help release-name
+  matching
 
 ## Future-Agent Guard Rails
 

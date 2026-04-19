@@ -1,5 +1,8 @@
 [COLOR darkgoldenrod]GOD BLESS HIM AND KEEP HIM SAFE.[/COLOR]
 
+[COLOR dodgerblue][B]Version 2.0.34[/B][/COLOR]
+- Preserve meaningful technical bracket segments during bundled subtitle-selector normalization so release matching keeps cues like `[1080p]`, codec tags, and year-style bracket tokens instead of discarding them as noise.
+
 [COLOR dodgerblue][B]Version 2.0.33[/B][/COLOR]
 - Added TMDb collection-search support for movie searches so matching collection results can open directly into the related movie-set listing.
 
