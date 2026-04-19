@@ -1,5 +1,10 @@
 [COLOR darkgoldenrod]GOD BLESS HIM AND KEEP HIM SAFE.[/COLOR]
 
+[COLOR dodgerblue][B]Version 2.0.31[/B][/COLOR]
+- Added Gemini-backed AI Search inside Fen Light Patched so natural-language prompts can build TMDb-backed movie and TV result lists without leaving the patched addon.
+- Added a Gemini API key field to the existing settings manager Accounts section.
+- Added local AI Search history alongside the existing movie, TV, anime, people, keyword, Easynews, and Trakt search histories.
+
 [COLOR dodgerblue][B]Version 2.0.30[/B][/COLOR]
 - Clear local Kodi bookmark rows using the real `plugin://plugin.video.fenlight.patched/...` playback URLs so erase-bookmark actions target the active movie or episode instead of relying on the old broad filename match.
 
