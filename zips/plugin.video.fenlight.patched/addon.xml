@@ -1,4 +1,4 @@
-<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.31">
+<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.32">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -19,7 +19,10 @@
             <icon>resources/media/fenlight_icon.png</icon>
             <fanart>resources/media/fenlight_fanart2.jpg</fanart>
         </assets>
-        <news>[v2.0.31]:
+        <news>[v2.0.32]:
+  * Republish the same Gemini-backed AI Search test build under a higher test-only version so Kodi updates cleanly from the current production 2.0.31 release.
+
+[v2.0.31]:
   * Add Gemini-backed AI Search inside Fen Light Patched so natural-language discovery can build TMDb-backed movie and TV result lists without leaving the patched addon.
   * Store AI Search history locally and expose a Gemini API key field in the existing settings manager.
 

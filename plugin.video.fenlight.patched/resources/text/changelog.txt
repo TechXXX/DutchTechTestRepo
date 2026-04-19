@@ -1,5 +1,8 @@
 [COLOR darkgoldenrod]GOD BLESS HIM AND KEEP HIM SAFE.[/COLOR]
 
+[COLOR dodgerblue][B]Version 2.0.32[/B][/COLOR]
+- Republished the same Gemini-backed AI Search test build under a higher test-only version so Kodi updates cleanly from the currently shipped production `2.0.31` release.
+
 [COLOR dodgerblue][B]Version 2.0.31[/B][/COLOR]
 - Added Gemini-backed AI Search inside Fen Light Patched so natural-language prompts can build TMDb-backed movie and TV result lists without leaving the patched addon.
 - Added a Gemini API key field to the existing settings manager Accounts section.
