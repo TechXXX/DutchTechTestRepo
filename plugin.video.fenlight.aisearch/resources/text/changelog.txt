@@ -1,5 +1,8 @@
 [COLOR darkgoldenrod]GOD BLESS HIM AND KEEP HIM SAFE.[/COLOR]
 
+[COLOR dodgerblue][B]Version 1.0.3[/B][/COLOR]
+- Added TMDb collection-search support for movie searches so matching collection results can open directly into the related movie-set listing.
+
 [COLOR dodgerblue][B]Version 1.0.1[/B][/COLOR]
 - Renamed the add-on display title to "Fen Light AIsearch" so Kodi shows the cleaner product name in repo and addon listings.
 
