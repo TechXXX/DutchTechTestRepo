@@ -28,8 +28,9 @@ The current patched design is:
 - capture a free-form user prompt
 - store that prompt in local Fenlight search history
 - ask Gemini only for structured intent
+- keep named-person intent separate from generic theme keywords
 - keep TMDb as the source of truth for the displayed results
-- prefer TMDb discover when genre/keyword intent is strong enough
+- prefer TMDb discover when genre/keyword/cast intent is strong enough
 - fall back to TMDb title and keyword seeding when discover is too thin
 - cache both interpreted intent and built result payloads for reuse
 
@@ -45,6 +46,7 @@ This file should own:
 - AI-search history integration
 - Gemini intent-to-structure translation handoff
 - TMDb discover/search payload construction
+- person-to-cast resolution for movie discovery
 - result-payload caching for repeat prompts
 
 This file should not own:
@@ -64,6 +66,8 @@ The main methods worth knowing are:
 - `_get_result_payload(...)`
 - `_build_result_payload(...)`
 - `_build_discover_url(...)`
+- `_resolve_cast_ids(...)`
+- `_intent_keyword_terms(...)`
 - `_title_seed_results(...)`
 - `_keyword_fallback_results(...)`
 
@@ -72,8 +76,8 @@ The main methods worth knowing are:
 - Keep TMDb as the final source of truth for rendered results.
 - Do not let the LLM directly choose final playable sources.
 - Do not move subtitle or playback policy into this module.
-- If result quality looks wrong, inspect genre and keyword resolution before
-  changing downstream source logic.
+- If result quality looks wrong, inspect genre, keyword, and people/cast
+  resolution before changing downstream source logic.
 - If you add new AI providers later, keep the structured-intent contract stable
   so the TMDb rendering path does not fork unnecessarily.
 
@@ -84,5 +88,6 @@ If AI Search looks wrong:
 - confirm `fenlight.gemini_api` is populated
 - confirm `GeminiAPI().interpret_prompt(...)` returned structured data
 - inspect whether discover mode or fallback mode was chosen
-- compare the resolved genres and keywords with TMDb responses
+- compare the resolved genres, keywords, and people/cast matches with TMDb
+  responses
 - only after that inspect source scraping or playback behavior

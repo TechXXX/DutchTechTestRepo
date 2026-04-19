@@ -24,7 +24,7 @@
             <news>INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.aisearch" name="Fen Light AIsearch" provider-name="DutchTech" version="1.0.3">
+    <addon id="plugin.video.fenlight.aisearch" name="Fen Light AIsearch" provider-name="DutchTech" version="1.0.4">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -45,10 +45,13 @@
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>INFO: For latest changes see Changelog within Tools of add-on.</news>
+            <news>[v1.0.4]:
+  * Teach Gemini intent parsing to preserve named people separately from generic keywords so movie AI searches can feed TMDb cast-aware discovery and better literal title/franchise handling.
+
+INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.34">
+    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.35">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -69,7 +72,10 @@
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v2.0.34]:
+            <news>[v2.0.35]:
+  * Teach Gemini intent parsing to preserve named people separately from generic keywords so movie AI searches can feed TMDb cast-aware discovery and better title-like prompt handling.
+
+[v2.0.34]:
   * Preserve meaningful technical bracket segments during bundled subtitle-selector normalization so release matching keeps cues like [1080p], codec tags, and year-style bracket tokens instead of discarding them as noise.
 
 [v2.0.33]:

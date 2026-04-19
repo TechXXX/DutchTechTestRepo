@@ -1,5 +1,9 @@
 [COLOR darkgoldenrod]GOD BLESS HIM AND KEEP HIM SAFE.[/COLOR]
 
+[COLOR dodgerblue][B]Version 2.0.35[/B][/COLOR]
+- Taught Gemini intent parsing to preserve named people separately from generic keywords so movie AI searches can feed TMDb cast-aware discovery.
+- Tightened short-prompt interpretation so likely title or franchise searches stay closer to the literal request instead of drifting into overly broad themes.
+
 [COLOR dodgerblue][B]Version 2.0.34[/B][/COLOR]
 - Preserve meaningful technical bracket segments during bundled subtitle-selector normalization so release matching keeps cues like `[1080p]`, codec tags, and year-style bracket tokens instead of discarding them as noise.
 

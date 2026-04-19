@@ -15,12 +15,13 @@ Current source-tree versions when this document was updated:
 
 - `plugin.video.fenlight` `2.0.13`
   Baseline Fenlight package.
-- `plugin.video.fenlight.aisearch` `1.0.3`
-  Standalone AI-search fork with its own addon id, profile, artwork, and repo package.
-- `plugin.video.fenlight.patched` `2.0.34`
+- `plugin.video.fenlight.aisearch` `1.0.4`
+  Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
+- `plugin.video.fenlight.patched` `2.0.35`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
-  Gemini-backed AI Search entrypoint that still renders TMDb-backed lists.
+  Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
+  now keeps named-person intent available for cast-aware movie discovery.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.26`
