@@ -11,6 +11,8 @@ Current source-tree versions when this document was updated:
 
 - `plugin.video.fenlight` `2.0.13`
   Baseline Fenlight package.
+- `plugin.video.fenlight.aisearch` `1.0.0`
+  Standalone AI-search fork with its own addon id, profile, artwork, and repo package.
 - `plugin.video.fenlight.patched` `2.0.24`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture.
@@ -27,6 +29,8 @@ Current source-tree versions when this document was updated:
 
 - `plugin.video.fenlight.patched/`
   Unpacked patched Fenlight source.
+- `plugin.video.fenlight.aisearch/`
+  Standalone Fenlight AI Search fork.
 - `service.subtitles.a4ksubtitles.patched/`
   Unpacked patched a4k source.
 - `plugin.video.fenlight/`
