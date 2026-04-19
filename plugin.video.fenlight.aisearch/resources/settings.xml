@@ -2,7 +2,7 @@
 <settings>
 	<!-- General -->
 	<category label="General">
-		<setting label="fenlight.aisearch uses it's own settings window." type="text" enable="false" />
-		<setting label="Open fenlight.aisearch Settings..." type="action" option="close" action="RunPlugin(plugin://plugin.video.fenlight.aisearch/?mode=open_settings)" />
+		<setting label="Fen Light AIsearch uses its own settings window." type="text" enable="false" />
+		<setting label="Open Fen Light AIsearch Settings..." type="action" option="close" action="RunPlugin(plugin://plugin.video.fenlight.aisearch/?mode=open_settings)" />
 	</category>
 </settings>

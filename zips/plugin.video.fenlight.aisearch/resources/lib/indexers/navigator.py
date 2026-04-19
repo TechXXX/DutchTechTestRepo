@@ -37,7 +37,7 @@ class Navigator:
 	def __init__(self, params):
 		self.params = params
 		self.params_get = self.params.get
-		self.category_name = self.params_get('name', 'fenlight.aisearch')
+		self.category_name = self.params_get('name', 'Fen Light AIsearch')
 		self.list_name = self.params_get('action', 'RootList')
 		self.is_home = home()
 
