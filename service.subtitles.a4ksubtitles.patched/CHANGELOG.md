@@ -1,6 +1,9 @@
 > Maintainer note: Read `README.md` first for the current file map and shipped
 > behavior. This file is release history only.
 
+* [v3.23.28](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.28):
+  * Rebrand the patched add-on metadata under `DutchTech` so Kodi listings no longer show the upstream or placeholder provider name for this repo build.
+
 * [v3.23.26](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.26):
   * Bypass the persisted subtitle-results cache during API-mode searches so Fenlight pre-play subtitle gathers always use a fresh subtitle result set instead of stale runtime cache state.
 

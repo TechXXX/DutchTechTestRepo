@@ -1,5 +1,8 @@
 [COLOR darkgoldenrod]GOD BLESS HIM AND KEEP HIM SAFE.[/COLOR]
 
+[COLOR dodgerblue][B]Version 2.0.37[/B][/COLOR]
+- Rebranded the patched add-on metadata under `DutchTech` so Kodi listings no longer show the upstream provider name for this repo build.
+
 [COLOR dodgerblue][B]Version 2.0.36[/B][/COLOR]
 - Added support for up to three Gemini API keys and automatic fallback on rate-limit or quota-exhaustion responses so AI Search can keep working when one project hits its cap.
 - Raised the subtitle-backed autoplay retry pool candidate limit from `5` to `10`.

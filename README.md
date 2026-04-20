@@ -55,22 +55,22 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.5`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.36`
+- `plugin.video.fenlight.patched` `2.0.37`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
   now keeps named-person intent available for cast-aware movie discovery. It
   also supports up to three Gemini keys and promotes a larger selector-backed
   retry pool.
-- `plugin.video.themoviedb.helper.patched` `6.15.2.1`
+- `plugin.video.themoviedb.helper.patched` `6.15.2.2`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow.
-- `skin.arctic.horizon.2.patched` `0.8.30.1`
+- `skin.arctic.horizon.2.patched` `0.8.30.2`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
-- `service.subtitles.a4ksubtitles.patched` `3.23.26`
+- `service.subtitles.a4ksubtitles.patched` `3.23.28`
   Test subtitle addon used with selector-aware Fenlight.
 - `service.kodi.synctool` `0.2.39`
   Separate Google Drive sync addon that is unrelated to subtitle-selector work.

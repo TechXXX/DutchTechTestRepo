@@ -54,7 +54,7 @@
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="Tikipeter" version="2.0.36">
+    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.37">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -75,7 +75,10 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v2.0.36]:
+            <news>[v2.0.37]:
+  * Rebrand the patched add-on metadata under DutchTech so Kodi listings no longer show the upstream provider name for this repo build.
+
+[v2.0.36]:
   * Add support for up to three Gemini API keys with automatic fallback on rate-limit or quota-exhaustion responses.
   * Expand the subtitle-backed retry pool to the best 10 selector-ranked candidates and let subtitle comments promote a stronger alias for the same subtitle item when they improve the release match.
 
@@ -120,7 +123,7 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.themoviedb.helper.patched" version="6.15.2.1" name="TMDb Helper Patched" provider-name="jurialmunkey">
+    <addon id="plugin.video.themoviedb.helper.patched" version="6.15.2.2" name="TMDb Helper Patched" provider-name="DutchTech">
         <requires>
             <import addon="xbmc.python" version="3.0.1" />
             <import addon="script.module.requests" version="2.9.1" />
@@ -228,7 +231,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.26" provider-name="Unknown">
+    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.28" provider-name="DutchTech">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -253,6 +256,9 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
                 <screenshot>screenshot-03.png</screenshot>
             </assets>
             <news>
+[v3.23.28]:
+  * Rebrand the patched add-on metadata under DutchTech so Kodi listings no longer show the upstream or placeholder provider name for this repo build.
+
 [v3.23.26]:
   * Bypass the persisted subtitle-results cache during API-mode searches so Fenlight pre-play subtitle gathers always use a fresh subtitle result set instead of stale runtime cache state.
 
@@ -304,7 +310,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="skin.arctic.horizon.2.patched" name="Arctic Horizon 2 Patched" provider-name="jurialmunkey" version="0.8.30.1">
+    <addon id="skin.arctic.horizon.2.patched" name="Arctic Horizon 2 Patched" provider-name="DutchTech" version="0.8.30.2">
         <requires>
             <import addon="xbmc.gui" version="5.17.0" />
             <import addon="script.skinshortcuts" version="0.4.0" />

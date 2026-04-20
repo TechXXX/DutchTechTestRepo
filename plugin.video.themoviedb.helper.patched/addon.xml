@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.themoviedb.helper.patched"
-version="6.15.2.1"
+version="6.15.2.2"
 name="TMDb Helper Patched"
-provider-name="jurialmunkey">
+provider-name="DutchTech">
 <requires>
   <import addon="xbmc.python" version="3.0.1"/>
   <import addon="script.module.requests" version="2.9.1"/>
