@@ -89,15 +89,16 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.5`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.40`
+- `plugin.video.fenlight.patched` `2.0.41`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
   now keeps named-person intent available for cast-aware movie discovery. It
   also supports up to three Gemini keys, promotes a larger selector-backed
   retry pool, can request TMDb metadata in a user-selected language with a
-  configurable fallback, and now carries the newer Trakt handling plus
-  subtitle-selector ranking tweaks from the latest test publish.
+  configurable fallback, now carries the newer Trakt handling plus
+  subtitle-selector ranking tweaks from the latest test publish, and shows an
+  explicit Trakt authorization status row in settings.
 - `plugin.video.themoviedb.helper.patched` `6.15.2.4`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against
