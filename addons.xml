@@ -54,7 +54,7 @@
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.38">
+    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.40">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -75,7 +75,14 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v2.0.38]:
+            <news>[v2.0.40]:
+  * Demote bare generic movie-title subtitles to low-confidence fallbacks so structured release-specific matches can win when available.
+  * Demote low-information source containment hits against structured DVDRip-style subtitles so malformed or ambiguous source names stop outranking stronger higher-quality matches.
+
+[v2.0.39]:
+  * Republished the TMDb metadata language and fallback-language controls under a higher production-safe test version.
+
+[v2.0.38]:
   * Add TMDb metadata language and fallback-language settings for movie, TV, collection, episode, and people details.
   * Fill missing summaries from the configured fallback language instead of dropping back to English-only metadata requests.
 
@@ -127,7 +134,7 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.themoviedb.helper.patched" version="6.15.2.3" name="TMDb Helper Patched" provider-name="DutchTech">
+    <addon id="plugin.video.themoviedb.helper.patched" version="6.15.2.4" name="TMDb Helper Patched" provider-name="DutchTech">
         <requires>
             <import addon="xbmc.python" version="3.0.1" />
             <import addon="script.module.requests" version="2.9.1" />
@@ -314,7 +321,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="skin.arctic.horizon.2.patched" name="Arctic Horizon 2 Patched" provider-name="DutchTech" version="0.8.30.3">
+    <addon id="skin.arctic.horizon.2.patched" name="Arctic Horizon 2 Patched" provider-name="DutchTech" version="0.8.30.4">
         <requires>
             <import addon="xbmc.gui" version="5.17.0" />
             <import addon="script.skinshortcuts" version="0.4.0" />
@@ -341,7 +348,7 @@ Full release history is now tracked in CHANGELOG.md.
             </assets>
         </extension>
     </addon>
-    <addon id="repository.dutchtechtestrepo" name="DutchTechTestRepo" provider-name="DutchTech" version="1.0.6">
+    <addon id="repository.dutchtechtestrepo" name="DutchTechTestRepo" provider-name="DutchTech" version="1.0.7">
         <extension point="xbmc.addon.repository" name="DutchTechTestRepo">
             <dir>
                 <info compressed="false">https://raw.githubusercontent.com/TechXXX/DutchTechTestRepo/main/addons.xml</info>

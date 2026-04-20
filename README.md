@@ -84,12 +84,12 @@ Current source-tree versions when this document was updated:
   also supports up to three Gemini keys, promotes a larger selector-backed
   retry pool, and can request TMDb metadata in a user-selected language with a
   configurable fallback.
-- `plugin.video.themoviedb.helper.patched` `6.15.2.3`
+- `plugin.video.themoviedb.helper.patched` `6.15.2.4`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against
   stale keyword/info actions and adds richer debug logging around
   recommendations navigation.
-- `skin.arctic.horizon.2.patched` `0.8.30.3`
+- `skin.arctic.horizon.2.patched` `0.8.30.4`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
   recommendations dialog properties before opening a fresh helper window.
