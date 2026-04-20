@@ -37,11 +37,24 @@ Gemini MVP:
 - patched Fenlight source now also lets the user choose a TMDb metadata
   language plus a fallback language, and fills missing movie/TV/collection/
   season/episode/people details from that fallback before giving up
+- Fen also now gets a Trakt auth/rate-limit handling change plus
+  subtitle-selector ranking tweaks:
+  - bare generic movie-title subtitles are demoted to low-confidence fallbacks
+  - low-information source containment hits no longer outrank stronger
+    structured DVDRip-style subtitle matches
+  - expired Trakt auth now surfaces a clearer notification instead of being
+    handled like a generic request failure
 - patched TMDb Helper recommendations now normalize keyword/info rows more
   safely and log the recommendation window inputs/actions so the patched AH2
   flow is easier to debug
+- patched TMDb Helper also now gets Trakt account-state/settings changes:
+  - authenticated Trakt username is stored in settings
+  - startup, sync, and connection notifications default to off in test builds
 - patched AH2 now clears stale recommendation-window state before opening the
   helper dialog again, reducing reuse of old recommendation properties
+- patched AH2 also gets a small cast-bio label improvement so the info dialog
+  can still show gender/age/department/birth details when biography text is
+  empty
 - the current live installed patched addon versions on this machine are:
   - `plugin.video.fenlight.patched` `2.0.36`
   - `service.subtitles.a4ksubtitles.patched` `3.23.27`
@@ -76,30 +89,32 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.5`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.38`
+- `plugin.video.fenlight.patched` `2.0.40`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
   now keeps named-person intent available for cast-aware movie discovery. It
   also supports up to three Gemini keys, promotes a larger selector-backed
-  retry pool, and can request TMDb metadata in a user-selected language with a
-  configurable fallback.
+  retry pool, can request TMDb metadata in a user-selected language with a
+  configurable fallback, and now carries the newer Trakt handling plus
+  subtitle-selector ranking tweaks from the latest test publish.
 - `plugin.video.themoviedb.helper.patched` `6.15.2.4`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against
-  stale keyword/info actions and adds richer debug logging around
-  recommendations navigation.
+  stale keyword/info actions, adds richer debug logging around recommendations
+  navigation, and persists authenticated Trakt account state more explicitly.
 - `skin.arctic.horizon.2.patched` `0.8.30.4`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
-  recommendations dialog properties before opening a fresh helper window.
+  recommendations dialog properties before opening a fresh helper window and
+  improves the cast-bio fallback label.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.28`
   Test subtitle addon used with selector-aware Fenlight.
 - `service.kodi.synctool` `0.2.39`
   Separate Google Drive sync addon that is unrelated to subtitle-selector work.
-- `repository.dutchtechtestrepo` `1.0.6`
+- `repository.dutchtechtestrepo` `1.0.7`
   The repository addon that Kodi installs first.
 
 ## Layout
