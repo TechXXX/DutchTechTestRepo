@@ -4,10 +4,13 @@ This repository is the GitHub Pages test repo for DutchTech Kodi packages.
 
 For the subtitle-selector migration, this repo matters because it is the test
 distribution channel for the patched Fenlight and patched a4k addons. It also
-now carries two Gemini-backed AI-search surfaces:
+now carries two Gemini-backed AI-search surfaces and two UI/navigation support
+addons:
 
 - the standalone `plugin.video.fenlight.aisearch` fork
 - the in-addon AI Search entrypoint inside `plugin.video.fenlight.patched`
+- `plugin.video.themoviedb.helper.patched`
+- `skin.arctic.horizon.2.patched`
 
 ## Progress Snapshot
 
@@ -59,6 +62,12 @@ Current source-tree versions when this document was updated:
   now keeps named-person intent available for cast-aware movie discovery. It
   also supports up to three Gemini keys and promotes a larger selector-backed
   retry pool.
+- `plugin.video.themoviedb.helper.patched` `6.15.2.1`
+  Patched TMDb Helper package added to this repo for the matching patched skin
+  flow.
+- `skin.arctic.horizon.2.patched` `0.8.30.1`
+  Patched Arctic Horizon 2 skin package intended to target the patched TMDb
+  Helper addon id from this same repo.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.26`
@@ -74,6 +83,10 @@ Current source-tree versions when this document was updated:
   Unpacked patched Fenlight source.
 - `plugin.video.fenlight.aisearch/`
   Standalone Fenlight AI Search fork.
+- `plugin.video.themoviedb.helper.patched/`
+  Patched TMDb Helper source.
+- `skin.arctic.horizon.2.patched/`
+  Patched Arctic Horizon 2 skin source.
 - `service.subtitles.a4ksubtitles.patched/`
   Unpacked patched a4k source.
 - `plugin.video.fenlight/`
@@ -204,3 +217,6 @@ Guard rails:
   selector behavior
 - unrelated addons such as `service.kodi.synctool` should only be touched when
   intentionally working on that addon
+- the patched TMDb Helper and patched Arctic Horizon 2 skin should stay aligned
+  on addon ids and plugin paths if they are shipped as a matched pair from this
+  repo
