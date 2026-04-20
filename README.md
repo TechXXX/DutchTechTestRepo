@@ -9,19 +9,56 @@ now carries two Gemini-backed AI-search surfaces:
 - the standalone `plugin.video.fenlight.aisearch` fork
 - the in-addon AI Search entrypoint inside `plugin.video.fenlight.patched`
 
+## Progress Snapshot
+
+As of `2026-04-20`, the AI-search work in this repo has moved beyond the first
+Gemini MVP:
+
+- `plugin.video.fenlight.patched` source now has the newer AI Search flow that:
+  - biases Gemini toward title/franchise interpretation for short prompts
+  - keeps named people separate from loose keywords via a `people` field
+  - resolves named people through TMDb person search for movie prompts
+  - injects `with_cast` into TMDb discover queries when cast intent is present
+  - can cycle across up to three Gemini API keys on quota exhaustion
+  - uses `v3` AI-search cache keys for fresh interpretation/results
+- `plugin.video.fenlight.aisearch` source has been kept in sync with the same
+  `v3` AI-search behavior, including multi-key Gemini fallback
+- both repo addons also carry the Fen compatibility restore for collection
+  search:
+  - `plugin://.../?mode=build_movie_list&action=tmdb_movies_search_sets&query=`
+- patched Fenlight source now also has the newer selector tuning that:
+  - raises the subtitle-backed retry pool from the best `5` to the best `10`
+    selector-ranked candidates
+  - lets subtitle comment aliases strengthen the same subtitle item when they
+    improve the release match instead of being fallback-only in all cases
+- live installed copies of `plugin.video.fenlight.patched` and
+  `plugin.video.fenlight.aisearch` on this machine were patched and manually
+  validated during development
+- repo source-tree verification for the synced AI-search changes passed with:
+  - `python3 -m py_compile` on both addon trees
+  - `git diff --check`
+
+Important packaging note:
+
+- treat `zips/`, `addons.xml`, and `addons.xml.md5` as generated output
+- when these addon source trees change, regenerate the matching package output
+  and repo metadata before publish/install testing
+
 ## Addons In This Repo
 
 Current source-tree versions when this document was updated:
 
 - `plugin.video.fenlight` `2.0.13`
   Baseline Fenlight package.
-- `plugin.video.fenlight.aisearch` `1.0.4`
+- `plugin.video.fenlight.aisearch` `1.0.5`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.35`
+- `plugin.video.fenlight.patched` `2.0.36`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
-  now keeps named-person intent available for cast-aware movie discovery.
+  now keeps named-person intent available for cast-aware movie discovery. It
+  also supports up to three Gemini keys and promotes a larger selector-backed
+  retry pool.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.26`
@@ -118,6 +155,42 @@ Important future-agent nuance:
 - if addon-local docs change, regenerate the matching package under `zips/`
 - if `addon.xml` changes, also regenerate `addons.xml`
 - do not edit `addons.xml.md5` by hand
+
+## Handover Prompt
+
+Use this prompt to continue the work in a fresh agent session:
+
+```text
+You are continuing work in /Users/kalter/Documents/CODEX/DutchTechTestRepo.
+
+Read /Users/kalter/Documents/CODEX/DutchTechTestRepo/README.md first.
+
+Current important state:
+- plugin.video.fenlight.patched and plugin.video.fenlight.aisearch source trees are intended to be in sync for AI Search behavior.
+- AI Search is now on a cast-aware v3 flow:
+  - stronger short-prompt title/franchise priming
+  - Gemini schema includes people
+  - movie discover queries can add with_cast after TMDb person lookup
+- AI Search can cycle across up to three Gemini API keys on quota exhaustion.
+- collection-search compatibility was restored for:
+  - plugin://<addon-id>/?mode=build_movie_list&action=tmdb_movies_search_sets&query=
+- patched Fenlight subtitle selection now:
+  - promotes the best 10 selector-backed retry candidates
+  - allows stronger comment aliases to upgrade the same subtitle item
+- live installed addon copies were patched and tested during development, but repo packaging artifacts may still lag behind source.
+
+First steps:
+1. Run git status in /Users/kalter/Documents/CODEX/DutchTechTestRepo.
+2. Inspect README.md and confirm whether the current task is source-only or publish/install related.
+3. If the goal is to ship the newest AI-search or selector changes, regenerate the relevant zips and repo metadata instead of only editing source.
+4. Be careful not to overwrite unrelated subtitle-selector work already in plugin.video.fenlight.patched/resources/lib/fenlightsubs/subtitle_selector.py and plugin.video.fenlight.patched/resources/lib/modules/sources.py.
+
+Guard rails:
+- Keep plugin.video.fenlight.patched and plugin.video.fenlight.aisearch aligned for AI Search changes unless there is a deliberate reason not to.
+- Do not regress the subtitle-selector/subtitle-aware source flow in the patched Fenlight addon.
+- Treat zips/ as generated output.
+- Prefer minimal, isolated edits and verify with python3 -m py_compile after AI-search changes.
+```
 
 ## Scope Guard Rails
 
