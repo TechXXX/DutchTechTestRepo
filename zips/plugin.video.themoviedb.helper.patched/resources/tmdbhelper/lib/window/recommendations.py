@@ -5,6 +5,7 @@ from tmdbhelper.lib.items.router import Router
 from tmdbhelper.lib.addon.dialog import BusyDialog
 from tmdbhelper.lib.addon.thread import ParallelThread, SafeThread
 from tmdbhelper.lib.addon.plugin import get_infolabel, executebuiltin, get_condvisibility, ADDONPATH
+from tmdbhelper.lib.addon.logger import kodi_log
 from jurialmunkey.window import get_property, WindowProperty, wait_until_active
 from jurialmunkey.parser import parse_paramstring, reconfigure_legacy_params
 from tmdbhelper.lib.query.database.database import FindQueriesDatabase
@@ -109,6 +110,12 @@ class WindowRecommendations(xbmcgui.WindowXMLDialog):
         self._setproperty = kwargs.get('setproperty')
 
     def onInit(self):
+        kodi_log(
+            f'Recommendations.onInit\n'
+            f'tmdb_type={self._tmdb_type} tmdb_id={self._tmdb_id} '
+            f'focus_id={self._focus_id} window_id={self._window_id}\n'
+            f'recommendations={self._recommendations}',
+            1)
         for k, v in self._window_properties.items():
             self.setProperty(k, v)
 
@@ -178,6 +185,15 @@ class WindowRecommendations(xbmcgui.WindowXMLDialog):
     def do_action(self):
         focus_id = self.getFocusId()
         _action = self.getProperty(f'Action_{focus_id}') or self._recommendations.get(focus_id, {}).get('action')
+        path = get_infolabel(f'Container({focus_id}).ListItem.FolderPath') if focus_id else ''
+        label = get_infolabel(f'Container({focus_id}).ListItem.Label') if focus_id else ''
+        tmdb_id = get_infolabel(f'Container({focus_id}).ListItem.UniqueID(tmdb)') if focus_id else ''
+        kodi_log(
+            f'Recommendations.do_action\n'
+            f'focus_id={focus_id} action={_action} label={label}\n'
+            f'path={path}\n'
+            f'listitem_tmdb_id={tmdb_id}',
+            1)
         if not _action:
             return
         if _action == 'info':
@@ -196,7 +212,13 @@ class WindowRecommendations(xbmcgui.WindowXMLDialog):
             params = reconfigure_legacy_params(**parse_paramstring(path.split('?')[1]))
             tmdb_type = params['tmdb_type']
             tmdb_id = params['tmdb_id']
+            kodi_log(
+                f'Recommendations.do_info\n'
+                f'focus_id={focus_id} path={path}\n'
+                f'tmdb_type={tmdb_type} tmdb_id={tmdb_id}',
+                1)
         except (TypeError, IndexError, KeyError, AttributeError):
+            kodi_log(f'Recommendations.do_info FAILED\nfocus_id={focus_id}', 1)
             return
         self._state = 'oninfo'
         self._window_manager.on_info(tmdb_type, tmdb_id, setproperty=self._setproperty)
@@ -212,6 +234,14 @@ class WindowRecommendations(xbmcgui.WindowXMLDialog):
 
         with BusyDialog():
             path = get_infolabel(f'Container({focus_id}).ListItem.FolderPath')
+            label = get_infolabel(f'Container({focus_id}).ListItem.Label')
+            tmdb_id = get_infolabel(f'Container({focus_id}).ListItem.UniqueID(tmdb)')
+            kodi_log(
+                f'Recommendations.do_play\n'
+                f'focus_id={focus_id} action={action} label={label}\n'
+                f'path={path}\n'
+                f'listitem_tmdb_id={tmdb_id}',
+                1)
             self._window_manager.on_exit()
             self.close()
 
@@ -223,8 +253,63 @@ class WindowRecommendations(xbmcgui.WindowXMLDialog):
             builtin = f'ActivateWindow(videos,{path},return)'
         executebuiltin(builtin)
 
-    def _get_items(self, path):
+    def _get_items(self, path, action=None):
         listitems = Router(-1, path).get_directory(items_only=True) or []
+        kodi_log(
+            f'Recommendations._get_items\n'
+            f'action={action} source_path={path}\n'
+            f'count={len(listitems)}',
+            1)
+        if path.startswith('info=movie_keywords'):
+            for li in listitems:
+                if not li:
+                    continue
+                keyword_id = ''
+                if getattr(li, 'unique_ids', None):
+                    keyword_id = li.unique_ids.get('tmdb') or ''
+                keyword_id = keyword_id or getattr(li, 'tmdb_id', None)
+                if not keyword_id and getattr(li, 'params', None):
+                    keyword_id = li.params.get('tmdb_id')
+                if not keyword_id:
+                    continue
+                # Keyword rows should browse a discover listing filtered by the
+                # keyword id, never try to play the keyword id as a movie id.
+                li.params = {
+                    'info': 'discover',
+                    'tmdb_type': 'movie',
+                    'with_keywords': keyword_id,
+                    'with_id': 'True',
+                    'plugin_category': getattr(li, 'label', ''),
+                }
+                li.is_folder = True
+                li.__dict__.pop('url', None)
+        if action == 'info':
+            for li in listitems:
+                if not li or not getattr(li, 'params', None):
+                    continue
+                if li.params.get('info') != 'play':
+                    continue
+                # Info rows should navigate deeper into details, never inherit a
+                # playable path from the generic video listitem defaults.
+                li.params['info'] = 'details'
+                li.is_folder = True
+                li.__dict__.pop('url', None)
+        debug_samples = []
+        for li in listitems[:5]:
+            if not li:
+                continue
+            label = getattr(li, 'label', '')
+            params = getattr(li, 'params', {}) or {}
+            info = params.get('info')
+            tmdb_type = params.get('tmdb_type')
+            tmdb_id = params.get('tmdb_id')
+            url = getattr(li, 'url', '')
+            debug_samples.append(
+                f'label={label} info={info} tmdb_type={tmdb_type} tmdb_id={tmdb_id}\nurl={url}')
+        if debug_samples:
+            kodi_log(
+                'Recommendations._get_items samples\n' + '\n---\n'.join(debug_samples),
+                1)
         listitems = [li.get_listitem(offscreen=True) for li in listitems if li]
         return listitems
 
@@ -249,8 +334,14 @@ class WindowRecommendations(xbmcgui.WindowXMLDialog):
 
         affx = f'&tmdb_type={self._tmdb_type}&tmdb_id={self._tmdb_id}' if self._recommendations[list_id]['related'] else ''
         path = f'{self._recommendations[list_id]["url"]}{affx}{self._tmdb_affix}'
+        kodi_log(
+            f'Recommendations.build_list\n'
+            f'list_id={list_id} action={self._recommendations[list_id].get("action")} '
+            f'related={self._recommendations[list_id]["related"]}\n'
+            f'path={path}',
+            1)
 
-        _listitems = self._get_items(path)
+        _listitems = self._get_items(path, action=self._recommendations[list_id].get('action'))
         self.clearProperty(PROP_LIST_ISUPDATING.format(list_id))
         return _listitems
 

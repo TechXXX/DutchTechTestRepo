@@ -775,6 +775,10 @@
             <param name="id">7002</param>
             <onfocus condition="Skin.HasSetting(Recommendations.UseLocal)">SetFocus(50)</onfocus>
             <include content="Action_Recommendations_OnFocus" condition="!Skin.HasSetting(Recommendations.UseLocal)">
+                <onfocus>ClearProperty(Recommendations.IsActive,Home)</onfocus>
+                <onfocus>ClearProperty(Recommendations.JSONDump,Home)</onfocus>
+                <onfocus>ClearProperty(Recommendations.OnClosed,Home)</onfocus>
+                <onfocus>ClearProperty(Recommendations.TMDbType,Home)</onfocus>
                 <onfocus>SetProperty(Recommendations.IsLoading,1,Home)</onfocus>
                 <onfocus>AlarmClock(ClearRecLoading,ClearProperty(Recommendations.IsLoading,Home),00:02,silent)</onfocus>
                 <onfocus condition="!Skin.HasSetting(DialogInfo.FocusButtons)">SetFocus(5000)</onfocus>

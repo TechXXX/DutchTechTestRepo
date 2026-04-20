@@ -1,5 +1,9 @@
 [COLOR darkgoldenrod]GOD BLESS HIM AND KEEP HIM SAFE.[/COLOR]
 
+[COLOR dodgerblue][B]Version 2.0.38[/B][/COLOR]
+- Added TMDb metadata language and fallback-language settings so Fen Light Patched can request movie, TV show, collection, season, episode, and people details in the user-selected language.
+- Fill missing summaries and labels from the configured TMDb fallback language instead of relying on English-only detail requests.
+
 [COLOR dodgerblue][B]Version 2.0.37[/B][/COLOR]
 - Rebranded the patched add-on metadata under `DutchTech` so Kodi listings no longer show the upstream provider name for this repo build.
 

@@ -34,9 +34,30 @@ Gemini MVP:
     selector-ranked candidates
   - lets subtitle comment aliases strengthen the same subtitle item when they
     improve the release match instead of being fallback-only in all cases
-- live installed copies of `plugin.video.fenlight.patched` and
-  `plugin.video.fenlight.aisearch` on this machine were patched and manually
-  validated during development
+- patched Fenlight source now also lets the user choose a TMDb metadata
+  language plus a fallback language, and fills missing movie/TV/collection/
+  season/episode/people details from that fallback before giving up
+- patched TMDb Helper recommendations now normalize keyword/info rows more
+  safely and log the recommendation window inputs/actions so the patched AH2
+  flow is easier to debug
+- patched AH2 now clears stale recommendation-window state before opening the
+  helper dialog again, reducing reuse of old recommendation properties
+- the current live installed patched addon versions on this machine are:
+  - `plugin.video.fenlight.patched` `2.0.36`
+  - `service.subtitles.a4ksubtitles.patched` `3.23.27`
+  - `plugin.video.themoviedb.helper.patched` `6.15.2.1`
+- the live install currently lags this repo for patched Fenlight, patched a4k,
+  and patched TMDb Helper, but the core selector-runtime Python files are
+  still in sync with this repo for:
+  - `plugin.video.fenlight.patched/resources/lib/modules/sources.py`
+  - `plugin.video.fenlight.patched/resources/lib/modules/player.py`
+  - `plugin.video.fenlight.patched/resources/lib/fenlightsubs/subtitle_selector.py`
+  - `service.subtitles.a4ksubtitles.patched/a4kSubtitles/search.py`
+  - `service.subtitles.a4ksubtitles.patched/a4kSubtitles/services/opensubtitles.py`
+  - `service.subtitles.a4ksubtitles.patched/a4kSubtitles/lib/kodi.py`
+- remaining live-vs-test drift is currently in addon versions, changelog text,
+  compiled caches, and some Fenlight skin XML files rather than the selector
+  handoff core
 - repo source-tree verification for the synced AI-search changes passed with:
   - `python3 -m py_compile` on both addon trees
   - `git diff --check`
@@ -55,19 +76,23 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.5`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.37`
+- `plugin.video.fenlight.patched` `2.0.38`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
   now keeps named-person intent available for cast-aware movie discovery. It
-  also supports up to three Gemini keys and promotes a larger selector-backed
-  retry pool.
-- `plugin.video.themoviedb.helper.patched` `6.15.2.2`
+  also supports up to three Gemini keys, promotes a larger selector-backed
+  retry pool, and can request TMDb metadata in a user-selected language with a
+  configurable fallback.
+- `plugin.video.themoviedb.helper.patched` `6.15.2.3`
   Patched TMDb Helper package added to this repo for the matching patched skin
-  flow.
-- `skin.arctic.horizon.2.patched` `0.8.30.2`
+  flow. The current test build also hardens the recommendations window against
+  stale keyword/info actions and adds richer debug logging around
+  recommendations navigation.
+- `skin.arctic.horizon.2.patched` `0.8.30.3`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
-  Helper addon id from this same repo.
+  Helper addon id from this same repo. The current test build also clears stale
+  recommendations dialog properties before opening a fresh helper window.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.28`
@@ -190,7 +215,8 @@ Current important state:
 - patched Fenlight subtitle selection now:
   - promotes the best 10 selector-backed retry candidates
   - allows stronger comment aliases to upgrade the same subtitle item
-- live installed addon copies were patched and tested during development, but repo packaging artifacts may still lag behind source.
+- the current live installed patched addon versions lag this repo for Fenlight, patched a4k, and patched TMDb Helper.
+- the current live installed core selector-runtime Python files still match this repo exactly for the Fenlight `sources.py` / `player.py` path, the vendored selector copy, and the patched a4k `search.py` / `opensubtitles.py` / `lib/kodi.py` path.
 
 First steps:
 1. Run git status in /Users/kalter/Documents/CODEX/DutchTechTestRepo.
