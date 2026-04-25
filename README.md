@@ -89,7 +89,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.5`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.42`
+- `plugin.video.fenlight.patched` `2.0.43`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -101,17 +101,19 @@ Current source-tree versions when this document was updated:
   explicit Trakt authorization status row in settings, and now skips autoplay
   sources whose detected audio streams are Russian-only, Ukrainian-only, or
   Chinese-only unless the selected title metadata already expects that spoken
-  language.
+  language. It also now uses the show's original or English title plus the
+  actual episode name when building TV subtitle-search metadata and filenames.
 - `plugin.video.themoviedb.helper.patched` `6.15.2.4`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against
   stale keyword/info actions, adds richer debug logging around recommendations
   navigation, and persists authenticated Trakt account state more explicitly.
-- `skin.arctic.horizon.2.patched` `0.8.30.4`
+- `skin.arctic.horizon.2.patched` `0.8.30.5`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
   recommendations dialog properties before opening a fresh helper window and
-  improves the cast-bio fallback label.
+  improves the cast-bio fallback label. It now also ships the Inter font family
+  with matching info-panel, rating, and hub-layout refinements.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.28`
