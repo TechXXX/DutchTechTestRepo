@@ -252,7 +252,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.28" provider-name="DutchTech">
+    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.29" provider-name="DutchTech">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -277,6 +277,9 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
                 <screenshot>screenshot-03.png</screenshot>
             </assets>
             <news>
+[v3.23.29]:
+  * Search OpenSubtitles TV episodes by parent show IMDb id plus season/episode first, so numeric show titles like 1923 return the full episode subtitle set instead of a single broad title fallback.
+
 [v3.23.28]:
   * Rebrand the patched add-on metadata under DutchTech so Kodi listings no longer show the upstream or placeholder provider name for this repo build.
 

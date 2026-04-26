@@ -120,8 +120,11 @@ Current source-tree versions when this document was updated:
   they stop reusing stray media and plot text.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
-- `service.subtitles.a4ksubtitles.patched` `3.23.28`
-  Test subtitle addon used with selector-aware Fenlight.
+- `service.subtitles.a4ksubtitles.patched` `3.23.29`
+  Test subtitle addon used with selector-aware Fenlight. The current test build
+  searches OpenSubtitles TV episodes by parent show IMDb id plus season/episode
+  before text fallbacks, so numeric show titles like `1923` return the full
+  episode subtitle set for selector ranking.
 - `service.kodi.synctool` `0.2.39`
   Separate Google Drive sync addon that is unrelated to subtitle-selector work.
 - `repository.dutchtechtestrepo` `1.0.7`
