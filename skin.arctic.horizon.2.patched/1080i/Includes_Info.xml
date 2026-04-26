@@ -1837,6 +1837,13 @@
         <definition>
             <control type="group">
                 <nested />
+                <visible>!String.Contains(ListItem.Art(icon),D2wG9Ak)</visible>
+                <visible>!String.Contains(ListItem.Art(fanart),YpaXaLM)</visible>
+                <visible>!String.Contains(ListItem.Label,Next Page)</visible>
+                <visible>!String.Contains($PARAM[container]ListItem.Art(icon),D2wG9Ak)</visible>
+                <visible>!String.Contains($PARAM[container]ListItem.Art(fanart),YpaXaLM)</visible>
+                <visible>!String.Contains($PARAM[container]ListItem.Property(fanart),YpaXaLM)</visible>
+                <visible>!String.Contains($PARAM[container]ListItem.Label,Next Page)</visible>
                 <control type="grouplist">
                     <top>$PARAM[panel_top]</top>
                     <hitrect x="0" y="0" w="0" h="0" />

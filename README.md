@@ -110,12 +110,14 @@ Current source-tree versions when this document was updated:
   navigation, persists authenticated Trakt account state more explicitly, and
   now switches OMDb lookups to the JSON endpoint while backfilling missing
   cached IMDb and OMDb ratings more reliably.
-- `skin.arctic.horizon.2.patched` `0.8.30.5`
+- `skin.arctic.horizon.2.patched` `0.8.30.6`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
   recommendations dialog properties before opening a fresh helper window and
   improves the cast-bio fallback label. It now also ships the Inter font family
-  with matching info-panel, rating, and hub-layout refinements.
+  with matching info-panel, rating, and hub-layout refinements, and gives
+  Next Page placeholder items dedicated fallback artwork/background handling so
+  they stop reusing stray media and plot text.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.28`

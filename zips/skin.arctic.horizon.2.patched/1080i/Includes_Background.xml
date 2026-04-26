@@ -123,7 +123,7 @@
                 <include content="Object_Control" condition="!Skin.String(ForegroundStyle,FlixArt) + !Skin.String(ForegroundStyle,KeyArt)">
                     <param name="control" value="image" />
                     <fadetime>600</fadetime>
-                    <texture background="true">$INFO[Container(99950).ListItem.Art(blurimage)]</texture>
+                    <texture background="true">$VAR[Image_Background_Blur]</texture>
                 </include>
 
                 <!-- KeyArt (Offset Blur) -->

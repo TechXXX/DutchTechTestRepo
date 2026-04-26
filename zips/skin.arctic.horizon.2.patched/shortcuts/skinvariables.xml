@@ -2,6 +2,7 @@
 <includes>
 
     <variable name="Image_Poster" containers="5000">
+        <value condition="String.Contains({listitemposition}.Art(icon),nextpage) | String.Contains({listitemposition}.Art(landscape),nextpage) | String.Contains({listitemposition}.Art(icon),D2wG9Ak) | String.Contains({listitemposition}.Art(poster),D2wG9Ak) | String.Contains({listitemposition}.Art(thumb),D2wG9Ak) | String.Contains({listitemposition}.Art(fanart),YpaXaLM) | String.Contains({listitemposition}.Art(banner),YpaXaLM) | [String.StartsWith({listitemposition}.Label,Next Page) + [String.Contains({listitemposition}.FolderPath,new_page=) | String.Contains({listitemposition}.FileNameAndPath,new_page=)]]">fallback/more-items.png</value>
         <value condition="!String.IsEmpty({listitemposition}.Art(poster))">$INFO[{listitemposition}.Art(poster)]</value>
         <value condition="!String.IsEmpty({listitemposition}.Art(tvshow.poster))">$INFO[{listitemposition}.Art(tvshow.poster)]</value>
         <value condition="!String.IsEmpty({listitemposition}.Icon)">$INFO[{listitemposition}.Icon]</value>
@@ -120,6 +121,7 @@
     </variable>
 
     <variable name="Label_Title" containers="50,591,503,513,523,573,301" parent="Control.HasFocus({id})">
+        <value condition="String.Contains({listitemposition}.Art(icon),D2wG9Ak) | String.Contains({listitemposition}.Art(poster),D2wG9Ak) | String.Contains({listitemposition}.Art(thumb),D2wG9Ak) | String.Contains({listitemposition}.Art(fanart),YpaXaLM) | String.Contains({listitemposition}.Art(banner),YpaXaLM) | String.Contains({listitemposition}.Property(fanart),YpaXaLM) | String.Contains({listitemposition}.Label,Next Page) | String.Contains({listitemposition}.Title,Next Page)" />
         <value condition="!String.IsEmpty({listitemposition}.TvShowTitle)">$INFO[{listitemposition}.TvShowTitle]</value>
         <value condition="!String.IsEmpty({listitemposition}.AlbumArtist) + [String.IsEqual({listitemposition}.DBType,song) | String.IsEqual({listitemposition}.DBType,album)]">$INFO[{listitemposition}.AlbumArtist]</value>
         <value condition="!String.IsEmpty({listitemposition}.Artist) + [String.IsEqual({listitemposition}.DBType,song) | String.IsEqual({listitemposition}.DBType,album)]">$INFO[{listitemposition}.Artist]</value>
@@ -128,6 +130,7 @@
     </variable>
 
     <variable name="Label_Plot" containers="50,591,503,513,523,573,301" parent="Control.HasFocus({id})">
+        <value condition="String.Contains({listitemposition}.Art(icon),D2wG9Ak) | String.Contains({listitemposition}.Art(poster),D2wG9Ak) | String.Contains({listitemposition}.Art(thumb),D2wG9Ak) | String.Contains({listitemposition}.Art(fanart),YpaXaLM) | String.Contains({listitemposition}.Art(banner),YpaXaLM) | String.Contains({listitemposition}.Property(fanart),YpaXaLM) | String.Contains({listitemposition}.Label,Next Page) | String.Contains({listitemposition}.Title,Next Page)" />
         <value condition="!String.IsEmpty({listitemposition}.Property(Artist_Description))">$INFO[{listitemposition}.Property(Artist_Description)]</value>
         <value condition="!String.IsEmpty({listitemposition}.Property(Album_Description))">$INFO[{listitemposition}.Property(Album_Description)]</value>
         <value condition="!String.IsEmpty({listitemposition}.AddonDescription)">$INFO[{listitemposition}.AddonDescription]</value>
