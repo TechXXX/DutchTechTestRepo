@@ -650,6 +650,8 @@ def _should_preserve_bracket_content(content: str) -> bool:
 
 def _extract_release_group(value: str) -> str | None:
     cleaned = _strip_known_extension(value.strip())
+    cleaned = re.sub(r"(?i)(?:[.\-_](?:rartv|eztv|tgx|ettv|publichd))+\.*$", "", cleaned)
+    cleaned = cleaned.rstrip(".-_ ")
     match = re.search(r"-([A-Za-z0-9]+)(?:\[[^\]]+\])?\s*$", cleaned)
     if not match:
         return None

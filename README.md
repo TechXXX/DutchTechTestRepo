@@ -89,7 +89,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.5`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.43`
+- `plugin.video.fenlight.patched` `2.0.45`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -99,10 +99,10 @@ Current source-tree versions when this document was updated:
   configurable fallback, now carries the newer Trakt handling plus
   subtitle-selector ranking tweaks from the latest test publish, shows an
   explicit Trakt authorization status row in settings, and now skips autoplay
-  sources whose detected audio streams are Russian-only, Ukrainian-only, or
-  Chinese-only unless the selected title metadata already expects that spoken
-  language. It also now uses the show's original or English title plus the
-  actual episode name when building TV subtitle-search metadata and filenames.
+  sources when every detected audio stream is Russian, Ukrainian, or Chinese
+  while still allowing mixed-language sources with an acceptable audio track.
+  It also now uses the show's original or English title plus the actual episode
+  name when building TV subtitle-search metadata and filenames.
 - `plugin.video.themoviedb.helper.patched` `6.15.2.5`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against
