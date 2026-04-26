@@ -103,11 +103,13 @@ Current source-tree versions when this document was updated:
   Chinese-only unless the selected title metadata already expects that spoken
   language. It also now uses the show's original or English title plus the
   actual episode name when building TV subtitle-search metadata and filenames.
-- `plugin.video.themoviedb.helper.patched` `6.15.2.4`
+- `plugin.video.themoviedb.helper.patched` `6.15.2.5`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against
   stale keyword/info actions, adds richer debug logging around recommendations
-  navigation, and persists authenticated Trakt account state more explicitly.
+  navigation, persists authenticated Trakt account state more explicitly, and
+  now switches OMDb lookups to the JSON endpoint while backfilling missing
+  cached IMDb and OMDb ratings more reliably.
 - `skin.arctic.horizon.2.patched` `0.8.30.5`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
