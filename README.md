@@ -89,7 +89,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.5`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.45`
+- `plugin.video.fenlight.patched` `2.0.46`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -102,7 +102,10 @@ Current source-tree versions when this document was updated:
   sources when every detected audio stream is Russian, Ukrainian, or Chinese
   while still allowing mixed-language sources with an acceptable audio track.
   It also now uses the show's original or English title plus the actual episode
-  name when building TV subtitle-search metadata and filenames.
+  name when building TV subtitle-search metadata and filenames. The current
+  test build also hardens playback-start detection so half-started sources are
+  retried sooner, while an intermittent Kodi/Real-Debrid teardown hang after
+  `stop()` remains a known investigation item.
 - `plugin.video.themoviedb.helper.patched` `6.15.2.5`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against
@@ -127,7 +130,7 @@ Current source-tree versions when this document was updated:
   episode subtitle set for selector ranking.
 - `service.kodi.synctool` `0.2.39`
   Separate Google Drive sync addon that is unrelated to subtitle-selector work.
-- `repository.dutchtechtestrepo` `1.0.7`
+- `repository.dutchtechtestrepo` `1.0.8`
   The repository addon that Kodi installs first.
 
 ## Layout

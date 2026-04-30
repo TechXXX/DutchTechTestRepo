@@ -1,4 +1,4 @@
-<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.45">
+<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.46">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -19,7 +19,11 @@
             <icon>resources/media/fenlight_icon.png</icon>
             <fanart>resources/media/fenlight_fanart2.jpg</fanart>
         </assets>
-        <news>[v2.0.45]:
+        <news>[v2.0.46]:
+  * Tighten playback-start validation so a source that only reaches a half-started state gets about 5 seconds of main startup plus a short grace settle before Fen retries the next candidate instead of treating started playback as automatically successful.
+  * Keep the current hybrid handoff, and note that an intermittent Real-Debrid/Kodi teardown hang after stop() is still under investigation when a bad stream refuses to close quickly.
+
+[v2.0.45]:
   * Strip tracker suffix noise like .rartv. and .eztv before release-group matching so season-pack sources such as S01 BiRDHOUSE rank above weaker same-quality fallbacks when their episode subtitle release matches.
 
 [v2.0.44]:
