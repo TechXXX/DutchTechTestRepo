@@ -22,9 +22,6 @@ dialog_close_settle_ms = 75
 post_fullscreen_settle_ms = 250
 audio_language_check_attempts_max = 8
 audio_language_check_settle_ms = 150
-playback_start_attempts_max = 100
-playback_start_grace_attempts_max = 20
-playback_start_grace_settle_ms = 100
 unwanted_audio_language_map = {
 	'ru': 'Russian',
 	'rus': 'Russian',
@@ -89,10 +86,7 @@ class FenLightPlayer(xbmc_player):
 			self.check_playback_start()
 			logger('Fen Light Patched', 'Player.play_video post-check | started=%s | successful=%s | cancelled=%s | url=%s' % (
 				self.playback_started, self.playback_successful, self.cancel_all_playback, self.url))
-			if self.playback_successful:
-				self.playback_successful = True
-				self.monitor()
-			elif self.playback_started and self._grace_settle_playback_start():
+			if self.playback_successful or self.playback_started:
 				self.playback_successful = True
 				self.monitor()
 			else:
@@ -104,13 +98,13 @@ class FenLightPlayer(xbmc_player):
 			except: pass
 
 	def check_playback_start(self):
-		attempts = 0
+		resolve_percent = 0
 		while self.playback_successful is None:
 			hide_busy_dialog()
 			if not self.sources_object.progress_dialog: self.playback_successful = True
 			elif self.sources_object.progress_dialog.skip_resolved(): self.playback_successful = False
 			elif self.sources_object.progress_dialog.iscanceled() or self.kodi_monitor.abortRequested(): self.cancel_all_playback, self.playback_successful = True, False
-			elif attempts >= playback_start_attempts_max: self.playback_successful = False
+			elif resolve_percent >= 100: self.playback_successful = False
 			elif get_visibility('Window.IsTopMost(okdialog)'):
 				execute_builtin('SendClick(okdialog, 11)')
 				self.playback_successful = False
@@ -122,45 +116,10 @@ class FenLightPlayer(xbmc_player):
 					logger('Fen Light Patched', 'Player.check_playback_start playing | total_time=%s | fullscreen=%s | url=%s' % (total_time, fullscreen, self.url))
 					if total_time not in total_time_errors and fullscreen: self.playback_successful = True
 				except: pass
-			attempts += 1
-			resolve_percent = round((float(attempts) / playback_start_attempts_max) * 100, 1)
+			resolve_percent = round(resolve_percent + 26.0/100, 1)
 			if self.sources_object.progress_dialog:
 				self.sources_object.progress_dialog.update_resolver(percent=resolve_percent)
 			sleep(50)
-
-	def _grace_settle_playback_start(self):
-		for _ in range(playback_start_grace_attempts_max):
-			hide_busy_dialog()
-			if self.sources_object.progress_dialog and self.sources_object.progress_dialog.iscanceled():
-				self.cancel_all_playback, self.playback_successful = True, False
-				return False
-			if self.kodi_monitor.abortRequested():
-				self.cancel_all_playback, self.playback_successful = True, False
-				return False
-			if get_visibility('Window.IsTopMost(okdialog)'):
-				execute_builtin('SendClick(okdialog, 11)')
-				return self._abort_failed_start('okdialog')
-			if not self.isPlayingVideo():
-				return self._abort_failed_start('not_playing')
-			try:
-				total_time = self.getTotalTime()
-				fullscreen = get_visibility(video_fullscreen_check)
-				logger('Fen Light Patched', 'Player.play_video grace probe | total_time=%s | fullscreen=%s | url=%s' % (total_time, fullscreen, self.url))
-				if total_time not in total_time_errors and fullscreen:
-					logger('Fen Light Patched', 'Player.play_video grace settled | url=%s' % self.url)
-					return True
-			except: pass
-			sleep(playback_start_grace_settle_ms)
-		return self._abort_failed_start('timeout')
-
-	def _abort_failed_start(self, reason):
-		logger('Fen Light Patched', 'Player.play_video grace failed | reason=%s | url=%s' % (reason, self.url))
-		self.playback_successful, self.cancel_all_playback = False, False
-		self.sources_object.playback_successful, self.sources_object.cancel_all_playback = False, False
-		self.clear_playback_properties()
-		try: self.stop()
-		except: pass
-		return False
 
 	def playback_close_dialogs(self):
 		self.sources_object.playback_successful = True

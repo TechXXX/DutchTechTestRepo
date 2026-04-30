@@ -89,7 +89,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.5`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.46`
+- `plugin.video.fenlight.patched` `2.0.47`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -103,9 +103,8 @@ Current source-tree versions when this document was updated:
   while still allowing mixed-language sources with an acceptable audio track.
   It also now uses the show's original or English title plus the actual episode
   name when building TV subtitle-search metadata and filenames. The current
-  test build also hardens playback-start detection so half-started sources are
-  retried sooner, while an intermittent Kodi/Real-Debrid teardown hang after
-  `stop()` remains a known investigation item.
+  test build also republishes the pre-`2.0.46` playback-start behavior under a
+  higher version so Kodi updates away from the reverted test build cleanly.
 - `plugin.video.themoviedb.helper.patched` `6.15.2.5`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against

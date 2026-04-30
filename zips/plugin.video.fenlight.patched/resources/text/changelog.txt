@@ -1,3 +1,6 @@
+[COLOR dodgerblue][B]Version 2.0.47[/B][/COLOR]
+- Roll back the stricter playback-start validation from `2.0.46` and republish the prior startup behavior under a higher version so Kodi updates away from the bad test build cleanly.
+
 [COLOR dodgerblue][B]Version 2.0.43[/B][/COLOR]
 - Use the show's original or English title plus the actual episode name when building TV subtitle-search metadata and filenames, reducing mismatches on localized show labels.
 

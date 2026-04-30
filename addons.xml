@@ -54,7 +54,7 @@
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.46">
+    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.47">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -75,7 +75,10 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v2.0.46]:
+            <news>[v2.0.47]:
+  * Roll back the stricter playback-start validation from 2.0.46 and republish the prior startup behavior under a higher version so Kodi updates away from the bad test build cleanly.
+
+[v2.0.46]:
   * Tighten playback-start validation so a source that only reaches a half-started state gets about 5 seconds of main startup plus a short grace settle before Fen retries the next candidate instead of treating started playback as automatically successful.
   * Keep the current hybrid handoff, and note that an intermittent Real-Debrid/Kodi teardown hang after stop() is still under investigation when a bad stream refuses to close quickly.
 
