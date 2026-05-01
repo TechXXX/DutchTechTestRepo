@@ -15,11 +15,15 @@ set_resolved_url = ku.set_resolved_url
 get_jsonrpc = ku.get_jsonrpc
 auto_resume, auto_nextep_settings, store_resolved_to_cloud = st.auto_resume, st.auto_nextep_settings, st.store_resolved_to_cloud
 set_bookmark, mark_movie, mark_episode = ws.set_bookmark, ws.mark_movie, ws.mark_episode
+clear_local_bookmark = ws.clear_local_bookmark
 total_time_errors = ('0.0', '', 0.0, None)
 set_resume, set_watched = 5, 90
 video_fullscreen_check = 'Window.IsActive(fullscreenvideo)'
 dialog_close_settle_ms = 75
 post_fullscreen_settle_ms = 250
+post_stop_bookmark_clear_delay_ms = 750
+post_stop_bookmark_clear_retry_ms = 500
+post_stop_bookmark_clear_attempts = 3
 audio_language_check_attempts_max = 8
 audio_language_check_settle_ms = 150
 unwanted_audio_language_map = {
@@ -166,6 +170,7 @@ class FenLightPlayer(xbmc_player):
 			logger('Fen Light Patched', 'Player.monitor exit | current_point=%s | media_marked=%s | url=%s' % (
 				getattr(self, 'current_point', None), self.media_marked, self.url))
 			if not self.media_marked: self.media_watched_marker()
+			self.schedule_local_bookmark_clear()
 			self.clear_playback_properties()
 			self.clear_playing_item()
 		except:
@@ -341,6 +346,17 @@ class FenLightPlayer(xbmc_player):
 	def run_media_progress(self, function, params):
 		try: function(params)
 		except: pass
+
+	def schedule_local_bookmark_clear(self):
+		if self.is_generic: return
+		Thread(target=self.clear_local_bookmark_after_stop, args=(self.media_type, self.tmdb_id, self.season, self.episode)).start()
+
+	def clear_local_bookmark_after_stop(self, media_type, tmdb_id, season, episode):
+		sleep(post_stop_bookmark_clear_delay_ms)
+		for count in range(post_stop_bookmark_clear_attempts):
+			try: clear_local_bookmark(media_type, tmdb_id, season, episode)
+			except: pass
+			if count < post_stop_bookmark_clear_attempts - 1: sleep(post_stop_bookmark_clear_retry_ms)
 
 	def run_next_ep(self):
 		from modules.episode_tools import EpisodeTools
