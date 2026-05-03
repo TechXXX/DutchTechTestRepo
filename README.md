@@ -116,7 +116,8 @@ Current source-tree versions when this document was updated:
   navigation, persists authenticated Trakt account state more explicitly, and
   now switches OMDb lookups to the JSON endpoint while backfilling missing
   cached IMDb and OMDb ratings more reliably. It now also ships a bundled
-  default OMDb API key for repo installs.
+  default OMDb API key for repo installs and includes bundled Fen Light /
+  Fen Light Patched TMDb player definitions for default installs.
 - `skin.arctic.horizon.2.patched` `0.8.30.6`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
@@ -127,11 +128,15 @@ Current source-tree versions when this document was updated:
   they stop reusing stray media and plot text.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
-- `service.subtitles.a4ksubtitles.patched` `3.23.29`
+- `service.subtitles.a4ksubtitles.patched` `3.23.30`
   Test subtitle addon used with selector-aware Fenlight. The current test build
   searches OpenSubtitles TV episodes by parent show IMDb id plus season/episode
   before text fallbacks, so numeric show titles like `1923` return the full
-  episode subtitle set for selector ranking.
+  episode subtitle set for selector ranking. It also keeps repeated in-play
+  manual subtitle search working after a manual pick by returning the chosen
+  subtitle through Kodi's normal subtitle-service result path, while manual
+  subtitle rows now show `[AI]`, `[MT]`, and OpenSubtitles-backed `[HD]`
+  badges.
 - `service.kodi.synctool` `0.2.39`
   Separate Google Drive sync addon that is unrelated to subtitle-selector work.
 - `repository.dutchtechtestrepo` `1.0.8`
@@ -198,7 +203,7 @@ This addon now owns:
 - subtitle provider queries
 - OpenSubtitles translation-flag capture
 - subtitle ordering on the addon side
-- manual-search UI badges like `[AI]` and `[MT]`
+- manual-search UI badges like `[AI]`, `[MT]`, and `[HD]`
 - translated-subtitle fallback notifications when a subtitle is actually chosen
 
 It should not own Fenlight playback logic.
