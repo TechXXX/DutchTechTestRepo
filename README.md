@@ -109,7 +109,7 @@ Current source-tree versions when this document was updated:
   shadow snapshots opt-in behind a profile marker file, trims noisy playback
   and bookmark debug logging, and keeps the newer local resume bookmark cleanup
   on newer Kodi video databases.
-- `plugin.video.themoviedb.helper.patched` `6.15.2.7`
+- `plugin.video.themoviedb.helper.patched` `6.15.2.9`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against
   stale keyword/info actions, adds richer debug logging around recommendations
