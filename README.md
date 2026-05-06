@@ -203,7 +203,7 @@ Current source-tree versions when this document was updated:
   cached IMDb and OMDb ratings more reliably. It now also ships a bundled
   default OMDb API key for repo installs and includes bundled Fen Light /
   Fen Light Patched TMDb player definitions for default installs.
-- `skin.arctic.horizon.2.patched` `0.8.30.8`
+- `skin.arctic.horizon.2.patched` `0.8.30.10`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
   recommendations dialog properties before opening a fresh helper window and
