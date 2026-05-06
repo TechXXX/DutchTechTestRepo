@@ -60,7 +60,8 @@ Gemini MVP:
   empty
 - patched Fenlight plus patched AH2 now also add an in-play next-episode OSD
   path for episode playback, so the OSD can expose a direct jump to the next
-  episode without losing the safer stop-state behavior
+  episode without losing the safer stop-state behavior; the OSD action is hidden
+  when Fenlight can confirm there is no next aired episode
 - the current live installed patched addon versions on this machine are:
   - `plugin.video.fenlight.patched` `2.0.36`
   - `service.subtitles.a4ksubtitles.patched` `3.23.27`
@@ -87,6 +88,70 @@ Important packaging note:
 - when these addon source trees change, regenerate the matching package output
   and repo metadata before publish/install testing
 
+## FenLightAM Auth Handover - 2026-05-06
+
+Current staged Fen Light Patched auth work, adapted after comparing with
+FenLightAM:
+
+- Trakt defaults now use the new bundled Trakt app client ID/secret in
+  `plugin.video.fenlight.patched/resources/lib/modules/kodi_utils.py`.
+- The settings manager Restore Default actions for Trakt client ID/secret are
+  aligned with those new defaults.
+- Trakt device auth now generates a real local QR image with vendored `segno`,
+  copies the full activation URL, and falls back to the old static QR art if QR
+  generation fails.
+- Trakt token storage now uses Trakt's returned `expires_in` instead of a fixed
+  90-day guess.
+- Trakt calls now refresh inside a 1-hour early-refresh window and use a Kodi
+  window-property refresh lock to avoid concurrent refresh attempts.
+- Startup now runs a one-time old-key migration: if an existing install still
+  has the old upstream FenLight Trakt client ID in userdata, Fen Light Patched
+  restores the new bundled defaults, clears Trakt auth/cache state, marks Trakt
+  unauthorized, and prompts the user to re-authorize.
+- Real-Debrid, Premiumize, and AllDebrid auth dialogs now also generate real QR
+  codes from their provider activation URLs and copy those URLs instead of only
+  copying the short user code.
+- The repo now vendors `segno` under
+  `plugin.video.fenlight.patched/resources/lib/segno`; do not rely on a system
+  Python package for QR generation.
+
+Live-only note:
+
+- Permanent Trakt auth/failure breadcrumb logging was added only to the live
+  Kodi addon while testing. It writes Kodi log lines plus
+  `userdata/addon_data/plugin.video.fenlight.patched/trakt_auth_events.log`.
+  This logging is intentionally not present in the test repo source.
+
+Validation already done:
+
+- Live Kodi early-refresh test succeeded: Fen Light refreshed before
+  `sync/last_activities`, Trakt returned `expires_in_seconds=604799`, and auth
+  stayed `Authorized`.
+- Test repo `py_compile` passed for the touched Trakt, Debrid, service,
+  settings, utils, and vendored `segno` files.
+- `git diff --check` passed.
+- A search confirmed no live-only `trakt_auth_events` logging code exists in
+  the test repo.
+
+Manual test checklist before packaging:
+
+- Trakt authorize: QR renders, copied URL opens the activation page, auth
+  succeeds, username/auth status become authorized.
+- Existing-install migration: with old Trakt client ID in userdata, startup
+  restores defaults, clears Trakt auth/cache, and asks for reauthorization once.
+- Real-Debrid authorize: QR renders and copied activation URL works.
+- Premiumize authorize: QR renders and copied activation URL works.
+- AllDebrid authorize: QR renders and copied activation URL works.
+- After auth, Trakt monitor completes without 401 loops or repeated reauth
+  prompts.
+
+FenLightAM Trakt list reliability follow-up:
+
+- Implemented in `plugin.video.fenlight.patched` `2.0.60`: custom/user lists
+  now prefer stable Trakt `list_id` route params, fetch full list contents
+  page-by-page, sort locally from Trakt list sort headers, and keep legacy
+  `user`/`slug` fallback for old shortcuts and widgets.
+
 ## Addons In This Repo
 
 Current source-tree versions when this document was updated:
@@ -95,7 +160,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.6`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.59`
+- `plugin.video.fenlight.patched` `2.0.60`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -108,12 +173,19 @@ Current source-tree versions when this document was updated:
   sources when every detected audio stream is Russian, Ukrainian, or Chinese
   while still allowing mixed-language sources with an acceptable audio track.
   It also refreshes stale Trakt access tokens before asking for re-auth and
-  guards the Trakt monitor against invalid activity responses.
+  guards the Trakt monitor against invalid activity responses. The current
+  staged auth work also generates real QR codes for Trakt and Debrid account
+  authorization, uses Trakt's returned token lifetime, refreshes Trakt tokens
+  early with a refresh lock, and includes a one-time migration for installs
+  still carrying the old upstream Trakt app key.
   It now also ships updated bundled default Trakt client credentials and keeps
   the settings-manager restore-default Trakt actions aligned with those new
-  defaults.
+  defaults. It now also prefers stable Trakt list IDs for custom/user list
+  browsing, list-content cache keys, pagination, like/unlike, and owned-list
+  edits, while retaining legacy slug fallback for older shortcuts and widgets.
   It now also exposes a direct OSD next-episode jump during episode playback
-  through the matching patched AH2 controls.
+  through the matching patched AH2 controls and publishes whether a valid next
+  aired episode exists for the current playback item.
   It also now uses the show's original or English title plus the actual episode
   name when building TV subtitle-search metadata and filenames. The current
   test build also republishes the pre-`2.0.46` playback-start behavior under a
@@ -140,7 +212,8 @@ Current source-tree versions when this document was updated:
   Next Page placeholder items dedicated fallback artwork/background handling so
   they stop reusing stray media and plot text. It now also pairs with patched
   Fenlight playback state so episode playback can show a dedicated next-episode
-  OSD action while preserving stop behavior.
+  OSD action while preserving stop behavior, and hide that action when Fenlight
+  confirms there is no next aired episode.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.30`

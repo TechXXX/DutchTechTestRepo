@@ -291,6 +291,21 @@ def unzip(zip_location, destination_location, destination_check, show_busy=True)
 	if show_busy: hide_busy_dialog()
 	return status
 
+def make_qrcode(url):
+	if url == None: return
+	try:
+		import segno
+		from os import path
+		from modules.kodi_utils import addon_profile, logger
+		art_path = path.join(addon_profile(), 'auth_qr.png')
+		qrcode = segno.make(url, micro=False)
+		qrcode.save(art_path, scale=20)
+		return art_path
+	except Exception as e:
+		try: logger('QR Code Error', str(e))
+		except: pass
+		return
+
 def copy2clip(txt):
 	if sys.platform == "win32":
 		try:

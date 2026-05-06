@@ -468,6 +468,7 @@ default_settings = [
 {'setting_id': 'trakt.token', 'setting_type': 'string', 'setting_default': '0'},
 {'setting_id': 'trakt.auth_state', 'setting_type': 'string', 'setting_default': 'not_authorized'},
 {'setting_id': 'trakt.auth_state_display_name', 'setting_type': 'string', 'setting_default': 'Not Authorized'},
+{'setting_id': 'updatechecks.refresh_addon_keys', 'setting_type': 'string', 'setting_default': 'false'},
 {'setting_id': 'rd.client_id', 'setting_type': 'string', 'setting_default': 'empty_setting'},
 {'setting_id': 'rd.refresh', 'setting_type': 'string', 'setting_default': 'empty_setting'},
 {'setting_id': 'rd.secret', 'setting_type': 'string', 'setting_default': 'empty_setting'},

@@ -1,3 +1,18 @@
+[COLOR dodgerblue][B]Session Note (2026-05-06, Trakt list ID reliability)[/B][/COLOR]
+- Use stable Trakt list IDs for custom/user list browsing, pagination, cache keys, like/unlike, and owned-list edits.
+- Fetch full custom list contents page-by-page with Trakt's supported page size, then apply the Trakt sort headers locally across the combined result.
+- Keep legacy user/slug fallback for old shortcuts, widgets, and routes that were built before this change.
+
+[COLOR dodgerblue][B]Session Note (2026-05-06, OSD next-episode availability)[/B][/COLOR]
+- Publish `fenlight.current_has_next_episode` during episode playback so patched AH2 can hide the dedicated next-episode OSD button when Fenlight confirms there is no next aired episode.
+- Leave the button visible when next-episode availability is unknown, preserving the existing manual fallback instead of hiding the action on transient metadata errors.
+
+[COLOR dodgerblue][B]Session Note (2026-05-06, FenLightAM auth follow-up)[/B][/COLOR]
+- Add real QR-code authorization for Trakt, Real-Debrid, Premiumize, and AllDebrid while preserving manual URL/code fallbacks.
+- Use Trakt's returned token lifetime, refresh Trakt tokens inside an early-refresh window, and guard refresh with a lock.
+- Add a one-time migration for installs still storing the old upstream Trakt client ID: restore the new default client credentials, clear Trakt auth/cache state, and require reauthorization.
+- Keep permanent Trakt auth/failure event logging live-only for debugging; it is not part of the test repo source.
+
 [COLOR dodgerblue][B]Session Note (2026-05-06, Trakt default key refresh)[/B][/COLOR]
 - Update the bundled default Trakt client ID and secret.
 - Keep the settings manager Restore Default Trakt actions aligned with the new bundled Trakt defaults.

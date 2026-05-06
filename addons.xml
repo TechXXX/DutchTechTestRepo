@@ -57,7 +57,7 @@
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.59">
+    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.60">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -78,7 +78,10 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v2.0.59]:
+            <news>[v2.0.60]:
+  * Use stable Trakt list IDs for custom/user list browsing, pagination, cache keys, like/unlike, and owned-list edits, with legacy slug fallback for old shortcuts and widgets.
+
+[v2.0.59]:
   * Update the bundled default Trakt client ID and secret, and keep the settings manager restore-default actions aligned with the new Trakt defaults.
 
 [v2.0.57]:

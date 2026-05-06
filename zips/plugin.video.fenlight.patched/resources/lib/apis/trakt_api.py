@@ -9,7 +9,7 @@ from caches.main_cache import cache_object
 from caches.lists_cache import lists_cache_object
 from modules import kodi_utils, settings
 from modules.metadata import movie_meta_external_id, tvshow_meta_external_id
-from modules.utils import sort_list, sort_for_article, make_thread_list, get_datetime, timedelta, replace_html_codes, copy2clip, title_key, jsondate_to_datetime as js2date
+from modules.utils import sort_list, sort_for_article, make_thread_list, get_datetime, timedelta, replace_html_codes, copy2clip, make_qrcode, title_key, jsondate_to_datetime as js2date
 
 sleep, with_media_removals, get_property = kodi_utils.sleep, kodi_utils.with_media_removals, kodi_utils.get_property
 logger, notification, xbmc_player, confirm_dialog = kodi_utils.logger, kodi_utils.notification, kodi_utils.xbmc_player, kodi_utils.confirm_dialog
@@ -30,6 +30,11 @@ res_format = '%Y-%m-%dT%H:%M:%S.%fZ'
 API_ENDPOINT = 'https://api.trakt.tv/%s'
 timeout = 20
 EXPIRY_1_DAY, EXPIRY_1_WEEK = 24, 168
+DEFAULT_TRAKT_TOKEN_EXPIRES_IN = 7776000
+TRAKT_REFRESH_EARLY_SECONDS = 3600
+TRAKT_REFRESH_LOCK_PROPERTY = 'fenlight.trakt_refreshing_token'
+TRAKT_REFRESH_LOCK_WAIT_MS = 30000
+TRAKT_LIST_PAGE_LIMIT = 250
 
 def _set_trakt_auth_state(state, display_name):
 	set_setting('trakt.auth_state', state)
@@ -39,8 +44,7 @@ def sync_trakt_auth_state():
 	token = get_setting('fenlight.trakt.token')
 	refresh_token = get_setting('fenlight.trakt.refresh')
 	user = get_setting('fenlight.trakt.user')
-	try: expires_at = float(get_setting('fenlight.trakt.expires'))
-	except: expires_at = 0.0
+	expires_at = _trakt_expires_at()
 	if token in empty_setting_check or refresh_token in empty_setting_check:
 		_set_trakt_auth_state('not_authorized', 'Not Authorized')
 	elif expires_at and time.time() > expires_at:
@@ -49,6 +53,25 @@ def sync_trakt_auth_state():
 		_set_trakt_auth_state('authorization_incomplete', 'Authorization Incomplete')
 	else:
 		_set_trakt_auth_state('authorized', 'Authorized')
+
+def _trakt_token_expiry(response):
+	try: expires_in = int(response.get('expires_in', DEFAULT_TRAKT_TOKEN_EXPIRES_IN))
+	except: expires_in = DEFAULT_TRAKT_TOKEN_EXPIRES_IN
+	return str(time.time() + expires_in)
+
+def _trakt_expires_at():
+	try: return float(get_setting('fenlight.trakt.expires'))
+	except: return 0.0
+
+def _trakt_token_needs_refresh():
+	return time.time() + TRAKT_REFRESH_EARLY_SECONDS >= _trakt_expires_at()
+
+def _wait_for_trakt_refresh_lock():
+	waited = 0
+	while get_property(TRAKT_REFRESH_LOCK_PROPERTY) == 'true' and waited < TRAKT_REFRESH_LOCK_WAIT_MS:
+		sleep(250)
+		waited += 250
+	return get_property(TRAKT_REFRESH_LOCK_PROPERTY) != 'true'
 
 def no_client_key():
 	notification('Please set a valid Trakt Client ID Key')
@@ -63,9 +86,8 @@ def call_trakt(path, params={}, data=None, is_delete=False, with_auth=True, meth
 		resp = None
 		if with_auth:
 			try:
-				try: expires_at = float(get_setting('fenlight.trakt.expires'))
-				except: expires_at = 0.0
-				if time.time() > expires_at: trakt_refresh_token()
+				_wait_for_trakt_refresh_lock()
+				if get_setting('fenlight.trakt.refresh') not in empty_setting_check and _trakt_token_needs_refresh(): trakt_refresh_token()
 			except: pass
 			token = get_setting('fenlight.trakt.token')
 			if token: headers['Authorization'] = 'Bearer ' + token
@@ -118,17 +140,51 @@ def call_trakt(path, params={}, data=None, is_delete=False, with_auth=True, meth
 	elif status_code == 429:
 		headers = response.headers
 		if 'Retry-After' in headers:
-			sleep(1000 * headers['Retry-After'])
+			try: retry_after = int(headers['Retry-After'])
+			except: retry_after = 1
+			sleep(1000 * retry_after)
 			response = send_query()
 	response.encoding = 'utf-8'
 	try: result = response.json()
 	except: return None
 	headers = response.headers
 	if method == 'sort_by_headers' and 'X-Sort-By' in headers and 'X-Sort-How' in headers:
-		try: result = sort_list(headers['X-Sort-By'], headers['X-Sort-How'], result)
-		except: pass
-	if pagination: return (result, headers['X-Pagination-Page-Count'])
+		if pagination: result = {'sort_by': headers['X-Sort-By'], 'sort_how': headers['X-Sort-How'], 'data': result}
+		else:
+			try: result = sort_list(headers['X-Sort-By'], headers['X-Sort-How'], result)
+			except: pass
+	if pagination: return (result, headers.get('X-Pagination-Page-Count', page_no))
 	else: return result
+
+def _valid_trakt_list_value(value):
+	return value not in empty_setting_check and str(value) not in ('', 'None')
+
+def _trakt_page_count(value):
+	try: return max(int(value), 1)
+	except: return 1
+
+def _get_all_trakt_pages(params):
+	results = []
+	sort_by, sort_how = None, None
+	page_no, page_count = 1, 1
+	query_params = dict(params.get('params', {}))
+	if 'limit' not in query_params: query_params['limit'] = TRAKT_LIST_PAGE_LIMIT
+	while page_no <= page_count:
+		page_params = dict(query_params)
+		page_result = call_trakt(params['path'] % params.get('path_insert', ''), params=page_params, data=params.get('data'),
+								is_delete=params.get('is_delete', False), with_auth=params.get('with_auth', False),
+								method=params.get('method'), pagination=True, page_no=page_no)
+		if not page_result: break
+		data, page_count = page_result
+		page_count = _trakt_page_count(page_count)
+		if isinstance(data, dict) and 'data' in data:
+			sort_by = data.get('sort_by') or sort_by
+			sort_how = data.get('sort_how') or sort_how
+			data = data.get('data') or []
+		if isinstance(data, list): results.extend(data)
+		page_no += 1
+	if params.get('method') == 'sort_by_headers': return {'sort_by': sort_by, 'sort_how': sort_how, 'data': results}
+	return results
 
 def trakt_get_device_code():
 	CLIENT_ID = trakt_client()
@@ -149,10 +205,14 @@ def trakt_get_device_token(device_codes):
 		expires_in = device_codes['expires_in']
 		sleep_interval = device_codes['interval']
 		user_code = str(device_codes['user_code'])
-		try: copy2clip(user_code)
+		verification_url = str(device_codes['verification_url'])
+		auth_url = '%s?code=%s' % (verification_url.rstrip('/'), user_code)
+		qr_code = make_qrcode(auth_url)
+		try: copy2clip(auth_url)
 		except: pass
-		content = '[CR]Navigate to: [B]%s[/B][CR]Enter the following code: [B]%s[/B]' % (str(device_codes['verification_url']), user_code)
-		progressDialog = progress_dialog('Trakt Authorize', get_icon('trakt_qrcode'))
+		content = '[CR]Navigate to: [B]%s[/B][CR]Enter the following code: [B]%s[/B]' % (verification_url, user_code)
+		if qr_code: content += '[CR]Or scan the [B]QR Code[/B]'
+		progressDialog = progress_dialog('Trakt Authorize', qr_code or get_icon('trakt_qrcode'))
 		progressDialog.update(content, 0)
 		try:
 			time_passed = 0
@@ -175,25 +235,32 @@ def trakt_get_device_token(device_codes):
 	return result
 
 def trakt_refresh_token():
+	if get_property(TRAKT_REFRESH_LOCK_PROPERTY) == 'true':
+		if _wait_for_trakt_refresh_lock(): return not _trakt_token_needs_refresh()
+		return False
 	CLIENT_ID = trakt_client()
 	if CLIENT_ID in empty_setting_check: return no_client_key()
 	CLIENT_SECRET = trakt_secret()
 	if CLIENT_SECRET in empty_setting_check: return no_secret_key()
-	data = {        
-		'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET, 'redirect_uri': 'urn:ietf:wg:oauth:2.0:oob',
-		'grant_type': 'refresh_token', 'refresh_token': get_setting('fenlight.trakt.refresh')}
-	response = call_trakt("oauth/token", data=data, with_auth=False)
-	if response:
-		try:
-			set_setting('trakt.token', response["access_token"])
-			set_setting('trakt.refresh', response["refresh_token"])
-			set_setting('trakt.expires', str(time.time() + 7776000))
-			sync_trakt_auth_state()
-			return True
-		except Exception as e:
-			logger('Trakt Error', 'Token refresh response missing expected data: %s' % str(e))
-	sync_trakt_auth_state()
-	return False
+	kodi_utils.set_property(TRAKT_REFRESH_LOCK_PROPERTY, 'true')
+	try:
+		data = {
+			'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET, 'redirect_uri': 'urn:ietf:wg:oauth:2.0:oob',
+			'grant_type': 'refresh_token', 'refresh_token': get_setting('fenlight.trakt.refresh')}
+		response = call_trakt("oauth/token", data=data, with_auth=False)
+		if response:
+			try:
+				set_setting('trakt.token', response["access_token"])
+				set_setting('trakt.refresh', response["refresh_token"])
+				set_setting('trakt.expires', _trakt_token_expiry(response))
+				sync_trakt_auth_state()
+				return True
+			except Exception as e:
+				logger('Trakt Error', 'Token refresh response missing expected data: %s' % str(e))
+		sync_trakt_auth_state()
+		return False
+	finally:
+		clear_property(TRAKT_REFRESH_LOCK_PROPERTY)
 
 def trakt_authenticate(dummy=''):
 	code = trakt_get_device_code()
@@ -201,7 +268,7 @@ def trakt_authenticate(dummy=''):
 	if token:
 		set_setting('trakt.token', token["access_token"])
 		set_setting('trakt.refresh', token["refresh_token"])
-		set_setting('trakt.expires', str(time.time() + 7776000))
+		set_setting('trakt.expires', _trakt_token_expiry(token))
 		set_setting('watched_indicators', '1')
 		sleep(1000)
 		try:
@@ -410,16 +477,20 @@ def trakt_fetch_collection_watchlist(list_type, media_type):
 	params = {'path': path, 'path_insert': (list_type, media_type), 'with_auth': True, 'pagination': False}
 	return cache_trakt_object(_process, string, params)
 
-def add_to_list(user, slug, data):
-	result = call_trakt('/users/%s/lists/%s/items' % (user, slug), data=data)
+def add_to_list(list_id, data, user=None, slug=None):
+	if _valid_trakt_list_value(list_id): result = call_trakt('users/me/lists/%s/items' % list_id, data=data)
+	elif _valid_trakt_list_value(user) and _valid_trakt_list_value(slug): result = call_trakt('users/%s/lists/%s/items' % (user, slug), data=data)
+	else: return notification('Error', 3000)
 	if result['existing']['movies'] + result['existing']['shows'] > 0: return notification('Already In List', 3000)
 	if result['added']['movies'] + result['added']['shows'] == 0: return notification('Error', 3000)
 	notification('Success', 3000)
 	trakt_sync_activities()
 	return result
 
-def remove_from_list(user, slug, data):
-	result = call_trakt('/users/%s/lists/%s/items/remove' % (user, slug), data=data)
+def remove_from_list(list_id, data, user=None, slug=None):
+	if _valid_trakt_list_value(list_id): result = call_trakt('users/me/lists/%s/items/remove' % list_id, data=data)
+	elif _valid_trakt_list_value(user) and _valid_trakt_list_value(slug): result = call_trakt('users/%s/lists/%s/items/remove' % (user, slug), data=data)
+	else: return notification('Error', 3000)
 	if result['deleted']['movies'] + result['deleted']['shows'] == 0: return notification('Error', 3000)
 	notification('Success', 3000)
 	trakt_sync_activities()
@@ -495,11 +566,23 @@ def trakt_lists_with_media(media_type, imdb_id):
 	params = {'path': '%s/%s/lists/personal', 'path_insert': (media_type, imdb_id), 'params': {'limit': 100}, 'pagination': False}
 	return cache_object(_process, string, 'foo', False, 168)
 
-def get_trakt_list_contents(list_type, user, slug, with_auth):
+def get_trakt_list_contents(list_type, user=None, slug=None, with_auth=False, list_id=None):
 	def _process(params):
+		raw_data = _get_all_trakt_pages(params)
+		sort_by, sort_how = None, None
+		if isinstance(raw_data, dict):
+			sort_by, sort_how = raw_data.get('sort_by'), raw_data.get('sort_how')
+			raw_data = raw_data.get('data') or []
+		if sort_by and sort_how:
+			try:
+				for item in raw_data:
+					if item['type'] == 'season': item['season']['title'] = '%s - %s' % (item['show']['title'], item['season']['title'])
+					elif item['type'] == 'episode': item['episode']['title'] = '%s - %s' % (item['show']['title'], item['episode']['title'])
+				raw_data = sort_list(sort_by, sort_how, raw_data)
+			except: pass
 		results = []
 		results_append = results.append
-		for c, i in enumerate(get_trakt(params)):
+		for c, i in enumerate(raw_data):
 			try:
 				_type = i['type']
 				if _type in ('movie', 'show'): data = {'media_ids': i[_type]['ids'], 'title': i[_type]['title'], 'type': _type, 'order': c}
@@ -510,9 +593,16 @@ def get_trakt_list_contents(list_type, user, slug, with_auth):
 				results_append(data)
 			except: pass
 		return results
-	string = 'trakt_list_contents_%s_%s_%s' % (list_type, user, slug)
-	if user == 'Trakt Official': params = {'path': 'lists/%s/items', 'path_insert': slug, 'params': {'extended':'full'}, 'method': 'sort_by_headers'}
-	else: params = {'path': 'users/%s/lists/%s/items', 'path_insert': (user, slug), 'params': {'extended':'full'}, 'with_auth': with_auth, 'method': 'sort_by_headers'}
+	if _valid_trakt_list_value(list_id):
+		string = 'trakt_list_contents_%s_%s' % (list_type, list_id)
+		if list_type == 'my_lists':
+			params = {'path': 'users/me/lists/%s/items', 'path_insert': list_id, 'params': {'extended':'full', 'limit': TRAKT_LIST_PAGE_LIMIT}, 'with_auth': True, 'method': 'sort_by_headers'}
+		else:
+			params = {'path': 'lists/%s/items', 'path_insert': list_id, 'params': {'extended':'full', 'limit': TRAKT_LIST_PAGE_LIMIT}, 'with_auth': with_auth, 'method': 'sort_by_headers'}
+	else:
+		string = 'trakt_list_contents_%s_%s_%s' % (list_type, user, slug)
+		if user == 'Trakt Official': params = {'path': 'lists/%s/items', 'path_insert': slug, 'params': {'extended':'full', 'limit': TRAKT_LIST_PAGE_LIMIT}, 'method': 'sort_by_headers'}
+		else: params = {'path': 'users/%s/lists/%s/items', 'path_insert': (user, slug), 'params': {'extended':'full', 'limit': TRAKT_LIST_PAGE_LIMIT}, 'with_auth': with_auth, 'method': 'sort_by_headers'}
 	return cache_trakt_object(_process, string, params)
 
 def trakt_trending_popular_lists(list_type, page_no):
@@ -527,21 +617,21 @@ def trakt_get_lists(list_type):
 	elif list_type == 'liked_lists':
 		string = 'trakt_liked_lists'
 		path = 'users/likes/lists%s'
-	params = {'path': path, 'params': {'limit': 1000}, 'pagination': False, 'with_auth': True}
-	return cache_trakt_object(get_trakt, string, params)
+	params = {'path': path, 'params': {'limit': TRAKT_LIST_PAGE_LIMIT}, 'with_auth': True}
+	return cache_trakt_object(_get_all_trakt_pages, string, params)
 
 def get_trakt_list_selection(list_choice=None):
-	my_lists = [{'name': item['name'], 'display': '[B]PERSONAL:[/B] [I]%s[/I]' % item['name'].upper(), 'user': item['user']['ids']['slug'], 'slug': item['ids']['slug']} \
+	my_lists = [{'name': item['name'], 'display': '[B]PERSONAL:[/B] [I]%s[/I]' % item['name'].upper(), 'list_type': 'my_lists', 'list_id': item['ids']['trakt']} \
 																											for item in trakt_get_lists('my_lists')]
 	my_lists.sort(key=lambda k: k['name'])
 	if list_choice == 'nav_edit':
-		liked_lists = [{'name': item['list']['name'], 'display': '[B]LIKED:[/B] [I]%s[/I]' % item['list']['name'].upper(), 'user': item['list']['user']['ids']['slug'],
-								'slug': item['list']['ids']['slug']} for item in trakt_get_lists('liked_lists')]
+		liked_lists = [{'name': item['list']['name'], 'display': '[B]LIKED:[/B] [I]%s[/I]' % item['list']['name'].upper(),
+								'list_type': 'liked_lists', 'list_id': item['list']['ids']['trakt']} for item in trakt_get_lists('liked_lists')]
 		liked_lists.sort(key=lambda k: (k['display']))
 		my_lists.extend(liked_lists)
 	else:
-		my_lists.insert(0, {'name': 'Collection', 'display': '[B][I]COLLECTION [/I][/B]', 'user': 'Collection', 'slug': 'Collection'})
-		my_lists.insert(0, {'name': 'Watchlist', 'display': '[B][I]WATCHLIST [/I][/B]',  'user': 'Watchlist', 'slug': 'Watchlist'})
+		my_lists.insert(0, {'name': 'Collection', 'display': '[B][I]COLLECTION [/I][/B]', 'list_type': 'collection'})
+		my_lists.insert(0, {'name': 'Watchlist', 'display': '[B][I]WATCHLIST [/I][/B]', 'list_type': 'watchlist'})
 	list_items = [{'line1': item['display']} for item in my_lists]
 	kwargs = {'items': json.dumps(list_items), 'heading': 'Select', 'narrow_window': 'true'}
 	selection = select_dialog(my_lists, **kwargs)
@@ -559,10 +649,10 @@ def make_new_trakt_list(params):
 	kodi_refresh()
 
 def delete_trakt_list(params):
-	user = params['user']
-	list_slug = params['list_slug']
+	list_id, user, list_slug = params.get('list_id'), params.get('user'), params.get('list_slug')
 	if not confirm_dialog(): return
-	url = 'users/%s/lists/%s' % (user, list_slug)
+	if _valid_trakt_list_value(list_id): url = 'users/me/lists/%s' % list_id
+	else: url = 'users/%s/lists/%s' % (user, list_slug)
 	call_trakt(url, is_delete=True)
 	trakt_sync_activities()
 	notification('Success', 3000)
@@ -580,12 +670,9 @@ def trakt_add_to_list(params):
 	selected = get_trakt_list_selection()
 	if selected is not None:
 		data = {key: [{'ids': {media_key: media_id}}]}
-		if selected['user'] == 'Watchlist': add_to_watchlist(data)
-		elif selected['user'] == 'Collection': add_to_collection(data)
-		else:
-			user = selected['user']
-			slug = selected['slug']
-			add_to_list(user, slug, data)
+		if selected.get('list_type') == 'watchlist': add_to_watchlist(data)
+		elif selected.get('list_type') == 'collection': add_to_collection(data)
+		else: add_to_list(selected.get('list_id'), data, selected.get('user'), selected.get('slug'))
 
 def trakt_remove_from_list(params):
 	tmdb_id, tvdb_id, imdb_id, media_type = params['tmdb_id'], params['tvdb_id'], params['imdb_id'], params['media_type']
@@ -599,19 +686,16 @@ def trakt_remove_from_list(params):
 	selected = get_trakt_list_selection()
 	if selected is not None:
 		data = {key: [{'ids': {media_key: media_id}}]}
-		if selected['user'] == 'Watchlist': remove_from_watchlist(data)
-		elif selected['user'] == 'Collection': remove_from_collection(data)
-		else:
-			user = selected['user']
-			slug = selected['slug']
-			remove_from_list(user, slug, data)
+		if selected.get('list_type') == 'watchlist': remove_from_watchlist(data)
+		elif selected.get('list_type') == 'collection': remove_from_collection(data)
+		else: remove_from_list(selected.get('list_id'), data, selected.get('user'), selected.get('slug'))
 
 def trakt_like_a_list(params):
-	user = params['user']
-	list_slug = params['list_slug']
+	list_id, user, list_slug = params.get('list_id'), params.get('user'), params.get('list_slug')
 	refresh = params.get('refresh', 'true') == 'true'
 	try:
-		call_trakt('/users/%s/lists/%s/like' % (user, list_slug), method='post')
+		if _valid_trakt_list_value(list_id): call_trakt('lists/%s/like' % list_id, method='post')
+		else: call_trakt('users/%s/lists/%s/like' % (user, list_slug), method='post')
 		notification('Success - Trakt List Liked', 3000)
 		trakt_sync_activities()
 		if refresh: kodi_refresh()
@@ -621,11 +705,11 @@ def trakt_like_a_list(params):
 		return False
 
 def trakt_unlike_a_list(params):
-	user = params['user']
-	list_slug = params['list_slug']
+	list_id, user, list_slug = params.get('list_id'), params.get('user'), params.get('list_slug')
 	refresh = params.get('refresh', 'true') == 'true'
 	try:
-		call_trakt('/users/%s/lists/%s/like' % (user, list_slug), method='delete')
+		if _valid_trakt_list_value(list_id): call_trakt('lists/%s/like' % list_id, method='delete')
+		else: call_trakt('users/%s/lists/%s/like' % (user, list_slug), method='delete')
 		notification('Success - Trakt List Unliked', 3000)
 		trakt_sync_activities()
 		if refresh: kodi_refresh()
