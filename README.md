@@ -44,6 +44,9 @@ Gemini MVP:
     structured DVDRip-style subtitle matches
   - expired Trakt auth now surfaces a clearer notification instead of being
     handled like a generic request failure
+  - stale Trakt access tokens are refreshed once with the stored refresh token
+    before showing the re-auth prompt, and invalid Trakt activity responses no
+    longer poison the monitor cache
 - patched TMDb Helper recommendations now normalize keyword/info rows more
   safely and log the recommendation window inputs/actions so the patched AH2
   flow is easier to debug
@@ -55,6 +58,9 @@ Gemini MVP:
 - patched AH2 also gets a small cast-bio label improvement so the info dialog
   can still show gender/age/department/birth details when biography text is
   empty
+- patched Fenlight plus patched AH2 now also add an in-play next-episode OSD
+  path for episode playback, so the OSD can expose a direct jump to the next
+  episode without losing the safer stop-state behavior
 - the current live installed patched addon versions on this machine are:
   - `plugin.video.fenlight.patched` `2.0.36`
   - `service.subtitles.a4ksubtitles.patched` `3.23.27`
@@ -89,7 +95,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.6`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.55`
+- `plugin.video.fenlight.patched` `2.0.57`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -101,6 +107,10 @@ Current source-tree versions when this document was updated:
   explicit Trakt authorization status row in settings, and now skips autoplay
   sources when every detected audio stream is Russian, Ukrainian, or Chinese
   while still allowing mixed-language sources with an acceptable audio track.
+  It also refreshes stale Trakt access tokens before asking for re-auth and
+  guards the Trakt monitor against invalid activity responses.
+  It now also exposes a direct OSD next-episode jump during episode playback
+  through the matching patched AH2 controls.
   It also now uses the show's original or English title plus the actual episode
   name when building TV subtitle-search metadata and filenames. The current
   test build also republishes the pre-`2.0.46` playback-start behavior under a
@@ -118,14 +128,16 @@ Current source-tree versions when this document was updated:
   cached IMDb and OMDb ratings more reliably. It now also ships a bundled
   default OMDb API key for repo installs and includes bundled Fen Light /
   Fen Light Patched TMDb player definitions for default installs.
-- `skin.arctic.horizon.2.patched` `0.8.30.6`
+- `skin.arctic.horizon.2.patched` `0.8.30.8`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
   recommendations dialog properties before opening a fresh helper window and
   improves the cast-bio fallback label. It now also ships the Inter font family
   with matching info-panel, rating, and hub-layout refinements, and gives
   Next Page placeholder items dedicated fallback artwork/background handling so
-  they stop reusing stray media and plot text.
+  they stop reusing stray media and plot text. It now also pairs with patched
+  Fenlight playback state so episode playback can show a dedicated next-episode
+  OSD action while preserving stop behavior.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.30`
@@ -139,7 +151,7 @@ Current source-tree versions when this document was updated:
   badges.
 - `service.kodi.synctool` `0.2.39`
   Separate Google Drive sync addon that is unrelated to subtitle-selector work.
-- `repository.dutchtechtestrepo` `1.0.8`
+- `repository.dutchtechtestrepo` `1.0.10`
   The repository addon that Kodi installs first.
 
 ## Layout
