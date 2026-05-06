@@ -95,7 +95,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.6`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.57`
+- `plugin.video.fenlight.patched` `2.0.59`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -109,6 +109,9 @@ Current source-tree versions when this document was updated:
   while still allowing mixed-language sources with an acceptable audio track.
   It also refreshes stale Trakt access tokens before asking for re-auth and
   guards the Trakt monitor against invalid activity responses.
+  It now also ships updated bundled default Trakt client credentials and keeps
+  the settings-manager restore-default Trakt actions aligned with those new
+  defaults.
   It now also exposes a direct OSD next-episode jump during episode playback
   through the matching patched AH2 controls.
   It also now uses the show's original or English title plus the actual episode

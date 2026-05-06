@@ -1,3 +1,7 @@
+[COLOR dodgerblue][B]Session Note (2026-05-06, Trakt default key refresh)[/B][/COLOR]
+- Update the bundled default Trakt client ID and secret.
+- Keep the settings manager Restore Default Trakt actions aligned with the new bundled Trakt defaults.
+
 [COLOR dodgerblue][B]Session Note (2026-05-06, Trakt token refresh hardening)[/B][/COLOR]
 - Refresh a stale Trakt access token once with the stored refresh token before showing the re-authentication prompt.
 - Do not cache invalid Trakt activity responses or let a missing activity payload crash the Trakt monitor.
