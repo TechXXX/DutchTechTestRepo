@@ -1,3 +1,8 @@
+[COLOR dodgerblue][B]Session Note (2026-05-08, English-to-Dutch subtitle fallback)[/B][/COLOR]
+- Use OpenSubtitles English matching only as the final fallback after Dutch subtitle matching fails.
+- Pass the selected English OpenSubtitles file to a4k for full-file Dutch translation, while allowing embedded Dutch streams to override the fallback once playback starts.
+- Tighten episodic subtitle matching so unrelated same-episode Dutch results cannot win on generic release tags alone.
+
 [COLOR dodgerblue][B]Session Note (2026-05-06, Trakt list ID reliability)[/B][/COLOR]
 - Use stable Trakt list IDs for custom/user list browsing, pagination, cache keys, like/unlike, and owned-list edits.
 - Fetch full custom list contents page-by-page with Trakt's supported page size, then apply the Trakt sort headers locally across the combined result.

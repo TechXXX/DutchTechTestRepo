@@ -1,6 +1,20 @@
 > Maintainer note: Read `README.md` first for the current file map and shipped
 > behavior. This file is release history only.
 
+* [v3.23.34](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.34):
+  * Rename the local GPT fallback notification to `GPT4 Translated`.
+
+* [v3.23.33](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.33):
+  * Show the same `Selected subtitle is AI-translated` notification when a locally translated English fallback is actually attached.
+
+* [v3.23.32](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.32):
+  * Switch the default OpenAI subtitle translation model to `gpt-4.1-mini-2025-04-14` to reduce fallback translation cost while keeping a stable GPT-4.1-family snapshot.
+
+* [v3.23.31](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.31):
+  * Translate selector-matched English OpenSubtitles fallbacks into Dutch as a full-file, resume-aware live subtitle.
+  * Prefer embedded Dutch subtitle streams before forcing the English AI fallback.
+  * Refresh one stable `.translated.live.nld.srt` file during translation and overwrite it with the final full-file subtitle so Kodi labels the external track as Dutch.
+
 * [v3.23.29](https://github.com/newt-sc/a4kSubtitles%20Patched/releases/tag/service.subtitles.a4ksubtitles.patched%2Fservice.subtitles.a4ksubtitles.patched-3.23.29):
   * Search OpenSubtitles TV episodes by parent show IMDb id plus season/episode before text fallbacks, so numeric show titles like `1923` return the full episode subtitle set and feed selector ranking with the correct release-specific candidates.
 
