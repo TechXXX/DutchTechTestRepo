@@ -160,7 +160,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.6`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.62`
+- `plugin.video.fenlight.patched` `2.0.65`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -194,13 +194,17 @@ Current source-tree versions when this document was updated:
   that only overlap on generic release tags. The current test build also
   prefers playable YouTube trailer keys in the extras window, falls back to
   the best sorted YouTube trailer when raw trailer metadata is missing or
-  non-plugin, and shows a clearer no-trailer notice instead of failing
-  playback. It also republishes the pre-`2.0.46` playback-start behavior under a
-  higher version so Kodi updates away from the reverted test build cleanly. It
-  now also keeps the safer next-episode chapter timing fallback, makes source
-  shadow snapshots opt-in behind a profile marker file, trims noisy playback
-  and bookmark debug logging, and keeps the newer local resume bookmark cleanup
-  on newer Kodi video databases.
+  non-plugin, shows a clearer no-trailer notice instead of failing playback,
+  fetches TMDb's standalone videos list when localized metadata has no
+  trailers, forces trailer playback into fullscreen video, and now guards
+  duplicate Trakt re-authorization prompts while skipping watched-indicator
+  refresh when Trakt returns invalid payloads. It also republishes the
+  pre-`2.0.46` playback-start behavior under a higher version so Kodi updates
+  away from the reverted test build cleanly. It now also keeps the safer
+  next-episode chapter timing fallback, makes source shadow snapshots opt-in
+  behind a profile marker file, trims noisy playback and bookmark debug
+  logging, and keeps the newer local resume bookmark cleanup on newer Kodi
+  video databases.
 - `plugin.video.themoviedb.helper.patched` `6.15.2.9`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against

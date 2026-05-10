@@ -1,3 +1,13 @@
+[COLOR dodgerblue][B]Session Note (2026-05-10, Trakt auth prompt guard)[/B][/COLOR]
+- Guard Trakt re-authorization prompts so only one dialog appears at a time.
+- Skip watched-indicator refresh when Trakt returns an invalid payload instead of trying to thread over bad data.
+
+[COLOR dodgerblue][B]Session Note (2026-05-10, fullscreen trailer stop)[/B][/COLOR]
+- Force Extras trailer playback into fullscreen video and stop the trailer when Back leaves fullscreen playback.
+
+[COLOR dodgerblue][B]Session Note (2026-05-10, localized trailer fallback)[/B][/COLOR]
+- Fetch TMDb's standalone videos list in Extras when localized metadata has no trailers, so Dutch metadata can still play English YouTube trailers.
+
 [COLOR dodgerblue][B]Session Note (2026-05-10, trailer playback fallback)[/B][/COLOR]
 - Prefer playable YouTube trailer keys in the extras window.
 - Fall back to the best sorted YouTube trailer when raw trailer metadata is missing or non-plugin.
