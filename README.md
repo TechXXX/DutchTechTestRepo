@@ -160,7 +160,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.6`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery.
-- `plugin.video.fenlight.patched` `2.0.61`
+- `plugin.video.fenlight.patched` `2.0.62`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -192,7 +192,10 @@ Current source-tree versions when this document was updated:
   fallback after Dutch subtitle matching fails, hands that exact English SRT to
   a4k for Dutch translation, and rejects unrelated same-episode Dutch matches
   that only overlap on generic release tags. The current test build also
-  republishes the pre-`2.0.46` playback-start behavior under a
+  prefers playable YouTube trailer keys in the extras window, falls back to
+  the best sorted YouTube trailer when raw trailer metadata is missing or
+  non-plugin, and shows a clearer no-trailer notice instead of failing
+  playback. It also republishes the pre-`2.0.46` playback-start behavior under a
   higher version so Kodi updates away from the reverted test build cleanly. It
   now also keeps the safer next-episode chapter timing fallback, makes source
   shadow snapshots opt-in behind a profile marker file, trims noisy playback
@@ -220,7 +223,7 @@ Current source-tree versions when this document was updated:
   confirms there is no next aired episode.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
-- `service.subtitles.a4ksubtitles.patched` `3.23.34`
+- `service.subtitles.a4ksubtitles.patched` `3.23.36`
   Test subtitle addon used with selector-aware Fenlight. The current test build
   translates selector-matched English OpenSubtitles fallbacks into Dutch as a
   full-file, resume-aware live subtitle, prefers embedded Dutch streams before
@@ -228,6 +231,10 @@ Current source-tree versions when this document was updated:
   language suffix so Kodi shows them as Dutch. It now shows `GPT4 Translated`
   when that locally translated fallback is attached. Its default OpenAI translation model is now
   `gpt-4.1-mini-2025-04-14` to reduce fallback translation cost. It also
+  pins OpenAI translation back to that mini snapshot when stale Kodi userdata
+  still contains the old full GPT-4.1 model, and keeps the bundled translator
+  import-compatible with Kodi Windows builds that still run Python `3.8.15`.
+  It also
   searches OpenSubtitles TV episodes by parent show IMDb id plus season/episode
   before text fallbacks, so numeric show titles like `1923` return the full
   episode subtitle set for selector ranking. It also keeps repeated in-play

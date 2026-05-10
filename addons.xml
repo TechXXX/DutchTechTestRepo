@@ -57,7 +57,7 @@
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.61">
+    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.62">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -78,7 +78,10 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v2.0.61]:
+            <news>[v2.0.62]:
+  * Prefer playable YouTube trailer keys in the extras window, fall back to the best sorted YouTube trailer when raw trailer metadata is missing or non-plugin, and show a clearer no-trailer notice instead of failing playback.
+
+[v2.0.61]:
   * Add a final OpenSubtitles English AI-translation fallback after Dutch subtitle matching fails, and tighten episodic subtitle matching so unrelated S01E01 Dutch results cannot win on generic release tags.
 
 [v2.0.60]:
@@ -569,7 +572,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.34" provider-name="DutchTech">
+    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.36" provider-name="DutchTech">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -594,6 +597,12 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
                 <screenshot>screenshot-03.png</screenshot>
             </assets>
             <news>
+[v3.23.36]:
+  * Make the bundled GPT subtitle translator import on Kodi Windows Python 3.8 by postponing modern type annotations, and log translator import failures instead of hiding them.
+
+[v3.23.35]:
+  * Pin OpenAI subtitle translation to gpt-4.1-mini-2025-04-14 and migrate stale saved AI model settings back to mini at runtime.
+
 [v3.23.34]:
   * Rename the local GPT fallback notification to GPT4 Translated.
 

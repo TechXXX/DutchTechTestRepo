@@ -2,6 +2,26 @@
 
 selector_source_key_prop = 'subs.selector_source_key'
 selector_payload_prop = 'subs.selector_payload'
+OPENAI_TRANSLATION_MODEL = 'gpt-4.1-mini-2025-04-14'
+
+def _pinned_ai_model(core, ai_provider, configured_model):
+    if ai_provider != 'OpenAI':
+        return configured_model
+
+    configured_model = (configured_model or '').strip()
+    if configured_model != OPENAI_TRANSLATION_MODEL:
+        core.logger.debug(
+            'Forcing OpenAI subtitle translation model to %s (configured=%s)' % (
+                OPENAI_TRANSLATION_MODEL,
+                configured_model or '<empty>',
+            )
+        )
+        try:
+            core.kodi.set_setting('general', 'ai_model', OPENAI_TRANSLATION_MODEL)
+        except Exception as exc:
+            core.logger.debug('Unable to persist pinned OpenAI subtitle translation model: %s' % exc)
+
+    return OPENAI_TRANSLATION_MODEL
 
 def _selector_matched_subtitle_name(result):
     if not isinstance(result, dict):
@@ -477,6 +497,12 @@ def start(api):
         nonlocal last_subfile, ai_last_timestamp, ai_tries, has_done_subs_check
         nonlocal ai_translation_active, ai_translation_source, attached_subtitle_active
 
+        translator = getattr(core.utils, 'gptsubtrans', None)
+        if not translator:
+            core.logger.error('AI translation fallback unavailable: bundled gptsubtrans could not be imported')
+            return False
+
+        ai_model = _pinned_ai_model(core, ai_provider, ai_model)
         target_language = language_code(target_preferredlang)
         if not target_language:
             core.logger.debug('AI translation fallback skipped: no target subtitle language')
@@ -579,7 +605,7 @@ def start(api):
             except Exception as exc:
                 core.logger.debug('Partial AI subtitle attach skipped: %s' % exc)
 
-        core.utils.gptsubtrans.translate(
+        translator.translate(
             input_file=subfile,
             target_language=target_language,
             output_file=subfile_translated,
@@ -732,8 +758,8 @@ def start(api):
                 use_ai = False
 
             ai_api_key = core.kodi.get_setting('general', 'ai_api_key')
-            ai_model = core.kodi.get_setting('general', 'ai_model')
-            if ai_api_key is None or ai_api_key == '' or ai_model is None or ai_model == '':
+            ai_model = _pinned_ai_model(core, ai_provider, core.kodi.get_setting('general', 'ai_model'))
+            if ai_api_key is None or ai_api_key == '' or (ai_provider != 'OpenAI' and (ai_model is None or ai_model == '')):
                 use_ai = False
 
         subfile = core.utils.get_subfile_from_temp_dir()
@@ -779,7 +805,12 @@ def start(api):
                     core.logger.debug('Subtitles file: %s' % active_subfile)
                     core.logger.debug('Using AI to translate portion of subtitles between %s and %s seconds in %s' % (ai_last_timestamp, ai_last_timestamp + translation_range, target_language))
 
-                    core.utils.gptsubtrans.translate(
+                    translator = getattr(core.utils, 'gptsubtrans', None)
+                    if not translator:
+                        core.logger.error('AI translation unavailable: bundled gptsubtrans could not be imported')
+                        return False
+
+                    translator.translate(
                         input_file=active_subfile,
                         target_language=target_language,
                         output_file=subfile_translated,
