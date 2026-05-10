@@ -1,3 +1,7 @@
+[COLOR dodgerblue][B]Session Note (2026-05-10, strict AI language filters)[/B][/COLOR]
+- Add an optional strict original-language AI Search filter so prompts like Korean, German, or Dutch can become TMDb original-language constraints instead of loose keywords when enabled.
+- Parse original-language intent from Gemini output and fallback prompt terms, then keep TMDb discover and local result filtering aligned with that language when the toggle is on.
+
 [COLOR dodgerblue][B]Session Note (2026-05-10, Trakt auth prompt guard)[/B][/COLOR]
 - Guard Trakt re-authorization prompts so only one dialog appears at a time.
 - Skip watched-indicator refresh when Trakt returns an invalid payload instead of trying to thread over bad data.
