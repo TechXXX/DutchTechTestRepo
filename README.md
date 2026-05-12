@@ -216,7 +216,7 @@ Current source-tree versions when this document was updated:
   cached IMDb and OMDb ratings more reliably. It now also ships a bundled
   default OMDb API key for repo installs and includes bundled Fen Light /
   Fen Light Patched TMDb player definitions for default installs.
-- `skin.arctic.horizon.2.patched` `0.8.30.10`
+- `skin.arctic.horizon.2.patched` `0.8.30.11`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
   recommendations dialog properties before opening a fresh helper window and
@@ -226,7 +226,9 @@ Current source-tree versions when this document was updated:
   they stop reusing stray media and plot text. It now also pairs with patched
   Fenlight playback state so episode playback can show a dedicated next-episode
   OSD action while preserving stop behavior, and hide that action when Fenlight
-  confirms there is no next aired episode.
+  confirms there is no next aired episode. It now also rewires the default skin
+  search menu to Fen Light movie, show, Gemini AI Search, and collection
+  lookups instead of the broader mixed-media shortcut set.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
 - `service.subtitles.a4ksubtitles.patched` `3.23.36`
