@@ -1,3 +1,8 @@
+[COLOR dodgerblue][B]Session Note (2026-05-12, QR auth refresh)[/B][/COLOR]
+- Refresh the QR-backed Trakt device-auth flow so the QR encodes the activation URL plus device code, renders the styled QR card, and keeps the manual verification URL and code prompt.
+- Refresh the Real-Debrid device-auth flow so the QR and clipboard use the provider's direct verification URL when available instead of only the generic device page.
+- Add the matching patched TMDb Helper Trakt QR dialog, QR create/cleanup helpers, and clipboard support in the test repo release line.
+
 [COLOR dodgerblue][B]Session Note (2026-05-10, strict AI language filters)[/B][/COLOR]
 - Add an optional strict original-language AI Search filter so prompts like Korean, German, or Dutch can become TMDb original-language constraints instead of loose keywords when enabled.
 - Parse original-language intent from Gemini output and fallback prompt terms, then keep TMDb discover and local result filtering aligned with that language when the toggle is on.

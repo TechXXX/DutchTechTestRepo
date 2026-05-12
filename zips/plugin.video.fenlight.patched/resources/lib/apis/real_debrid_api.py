@@ -38,9 +38,9 @@ class RealDebridAPI:
 		response = requests.get(url, timeout=timeout).json()
 		user_code = response['user_code']
 		verification_url = response.get('verification_url') or 'https://real-debrid.com/device'
-		auth_url = response.get('direct_verification_url') or verification_url
-		qr_code = make_qrcode(auth_url)
-		try: copy2clip(auth_url)
+		qr_url = response.get('direct_verification_url') or verification_url
+		qr_code = make_qrcode(qr_url)
+		try: copy2clip(qr_url)
 		except: pass
 		content = 'Authorize Debrid Services[CR]Navigate to: [B]%s[/B][CR]Enter the following code: [B]%s[/B]' % (verification_url, user_code)
 		if qr_code: content += '[CR]Or scan the [B]QR Code[/B]'

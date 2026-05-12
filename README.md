@@ -158,9 +158,9 @@ Current source-tree versions when this document was updated:
 
 - `plugin.video.fenlight` `2.0.14`
   Baseline Fenlight package.
-- `plugin.video.fenlight.aisearch` `1.0.7`
+- `plugin.video.fenlight.aisearch` `1.0.9`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery, and it can optionally turn language or nationality prompts like Korean, German, or Dutch into strict TMDb original-language filters.
-- `plugin.video.fenlight.patched` `2.0.66`
+- `plugin.video.fenlight.patched` `2.0.67`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -206,8 +206,11 @@ Current source-tree versions when this document was updated:
   logging, and keeps the newer local resume bookmark cleanup on newer Kodi
   video databases. It now also offers an optional strict original-language AI
   Search mode so language or nationality prompts can become TMDb
-  `with_original_language` filters instead of staying loose keywords.
-- `plugin.video.themoviedb.helper.patched` `6.15.2.9`
+  `with_original_language` filters instead of staying loose keywords. It now
+  also refreshes the Trakt and Real-Debrid QR-backed auth prompts with styled
+  Trakt QR cards, direct activation QR targets where available, and the
+  matching TMDb Helper Trakt QR dialog support.
+- `plugin.video.themoviedb.helper.patched` `6.15.2.11`
   Patched TMDb Helper package added to this repo for the matching patched skin
   flow. The current test build also hardens the recommendations window against
   stale keyword/info actions, adds richer debug logging around recommendations
@@ -215,7 +218,9 @@ Current source-tree versions when this document was updated:
   now switches OMDb lookups to the JSON endpoint while backfilling missing
   cached IMDb and OMDb ratings more reliably. It now also ships a bundled
   default OMDb API key for repo installs and includes bundled Fen Light /
-  Fen Light Patched TMDb player definitions for default installs.
+  Fen Light Patched TMDb player definitions for default installs. It now also
+  adds the custom Trakt QR auth dialog, styled QR generation helpers, QR file
+  cleanup, and clipboard support used by the matching test auth flow.
 - `skin.arctic.horizon.2.patched` `0.8.30.11`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale

@@ -24,7 +24,7 @@
             <news>INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.aisearch" name="Fen Light AIsearch" provider-name="DutchTech" version="1.0.7">
+    <addon id="plugin.video.fenlight.aisearch" name="Fen Light AIsearch" provider-name="DutchTech" version="1.0.9">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -45,7 +45,10 @@
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v1.0.7]:
+            <news>[v1.0.9]:
+  * Refresh the Trakt and Real-Debrid QR-backed device-auth flow with styled Trakt QR cards, direct activation QR targets where available, bundled segno QR generation, and a one-time migration away from the old Trakt app key.
+
+[v1.0.7]:
   * Add an optional strict original-language AI Search filter so prompts like Korean, German, or Dutch can become TMDb original-language constraints instead of loose keywords when enabled.
 
 [v1.0.6]:
@@ -60,7 +63,7 @@
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.66">
+    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.67">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -81,7 +84,10 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v2.0.66]:
+            <news>[v2.0.67]:
+  * Refresh the Trakt and Real-Debrid QR-backed device-auth flow with styled Trakt QR cards, direct activation QR targets where available, and the latest patched TMDb Helper Trakt QR dialog support.
+
+[v2.0.66]:
   * Add an optional strict original-language AI Search filter so prompts like Korean, German, or Dutch can become TMDb original-language constraints instead of loose keywords when enabled.
 
 [v2.0.65]:
@@ -200,7 +206,7 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.themoviedb.helper.patched" version="6.15.2.9" name="TMDb Helper Patched" provider-name="DutchTech">
+    <addon id="plugin.video.themoviedb.helper.patched" version="6.15.2.11" name="TMDb Helper Patched" provider-name="DutchTech">
         <requires>
             <import addon="xbmc.python" version="3.0.1" />
             <import addon="script.module.requests" version="2.9.1" />
