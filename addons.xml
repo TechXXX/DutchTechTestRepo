@@ -63,7 +63,7 @@
 INFO: For latest changes see Changelog within Tools of add-on.</news>
         </extension>
     </addon>
-    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.67">
+    <addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.68">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />
             <import addon="script.module.requests" version="2.19.1" />
@@ -84,7 +84,10 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
                 <icon>resources/media/fenlight_icon.png</icon>
                 <fanart>resources/media/fenlight_fanart2.jpg</fanart>
             </assets>
-            <news>[v2.0.67]:
+            <news>[v2.0.68]:
+  * Seed first-run settings from the live patched Fen Light profile, including CocoScrapers, list/result/playback preferences, size filters, pagination, and update behavior while leaving user credentials, tokens, account values, and local paths out of the package.
+
+[v2.0.67]:
   * Refresh the Trakt and Real-Debrid QR-backed device-auth flow with styled Trakt QR cards, direct activation QR targets where available, and the latest patched TMDb Helper Trakt QR dialog support.
 
 [v2.0.66]:
@@ -593,7 +596,7 @@ Full release history is now tracked in CHANGELOG.md.
         </news>
         </extension>
     </addon>
-    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.36" provider-name="DutchTech">
+    <addon id="service.subtitles.a4ksubtitles.patched" name="a4kSubtitles Patched" version="3.23.37" provider-name="DutchTech">
         <requires>
             <import addon="script.module.requests" />
             <import addon="vfs.libarchive" optional="true" />
@@ -618,6 +621,10 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, SubDL, Addic7ed
                 <screenshot>screenshot-03.png</screenshot>
             </assets>
             <news>
+[v3.23.37]:
+  * Keep AI subtitle translation off for fresh installs until an API key is entered, while leaving the API key field editable.
+  * Disable stale saved AI translation toggles at runtime when no API key is configured.
+
 [v3.23.36]:
   * Make the bundled GPT subtitle translator import on Kodi Windows Python 3.8 by postponing modern type annotations, and log translator import failures instead of hiding them.
 

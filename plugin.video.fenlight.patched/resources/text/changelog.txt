@@ -1,3 +1,7 @@
+[COLOR dodgerblue][B]Session Note (2026-05-12, live default settings seed)[/B][/COLOR]
+- Seed first-run Fen Light Patched settings from the live MacBook Kodi profile for non-secret preferences.
+- Default new installs to CocoScrapers, the live list/result/playback preferences, size filters, pagination, and update behavior while keeping credentials, tokens, account values, and local machine paths out of the package.
+
 [COLOR dodgerblue][B]Session Note (2026-05-12, QR auth refresh)[/B][/COLOR]
 - Refresh the QR-backed Trakt device-auth flow so the QR encodes the activation URL plus device code, renders the styled QR card, and keeps the manual verification URL and code prompt.
 - Refresh the Real-Debrid device-auth flow so the QR and clipboard use the provider's direct verification URL when available instead of only the generic device page.

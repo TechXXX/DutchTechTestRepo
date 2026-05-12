@@ -160,7 +160,7 @@ Current source-tree versions when this document was updated:
   Baseline Fenlight package.
 - `plugin.video.fenlight.aisearch` `1.0.9`
   Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery, and it can optionally turn language or nationality prompts like Korean, German, or Dutch into strict TMDb original-language filters.
-- `plugin.video.fenlight.patched` `2.0.67`
+- `plugin.video.fenlight.patched` `2.0.68`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -176,8 +176,9 @@ Current source-tree versions when this document was updated:
   guards the Trakt monitor against invalid activity responses. The current
   staged auth work also generates real QR codes for Trakt and Debrid account
   authorization, uses Trakt's returned token lifetime, refreshes Trakt tokens
-  early with a refresh lock, and includes a one-time migration for installs
-  still carrying the old upstream Trakt app key.
+  early with a refresh lock, includes a one-time migration for installs still
+  carrying the old upstream Trakt app key, and now seeds first-run defaults
+  from the live patched profile for non-secret Fen preferences only.
   It now also ships updated bundled default Trakt client credentials and keeps
   the settings-manager restore-default Trakt actions aligned with those new
   defaults. It now also prefers stable Trakt list IDs for custom/user list
@@ -236,8 +237,11 @@ Current source-tree versions when this document was updated:
   lookups instead of the broader mixed-media shortcut set.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
-- `service.subtitles.a4ksubtitles.patched` `3.23.36`
+- `service.subtitles.a4ksubtitles.patched` `3.23.37`
   Test subtitle addon used with selector-aware Fenlight. The current test build
+  keeps AI subtitle translation off until an API key is configured, leaves the
+  API key field editable while AI is off, and disables stale saved AI toggles
+  at runtime when no API key is present. It also
   translates selector-matched English OpenSubtitles fallbacks into Dutch as a
   full-file, resume-aware live subtitle, prefers embedded Dutch streams before
   using that fallback, and labels translated external files with the Dutch
