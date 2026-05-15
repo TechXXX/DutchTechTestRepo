@@ -196,6 +196,9 @@ def recommend_service():
 def recommend_seed():
 	return int(get_setting('fenlight.recommend_seed', '5'))
 
+def auto_tb_usenet_search():
+	return int(get_setting('fenlight.results.auto_tb_usenet_search', '1'))
+
 def tv_progress_location():
 	return int(get_setting('fenlight.tv_progress_location', '0'))
 
@@ -212,6 +215,12 @@ def external_scraper_info():
 def filter_by_name(scraper):
 	if get_property('fs_filterless_search') == 'true': return False
 	return get_setting('fenlight.%s.title_filter' % scraper, 'false') == 'true'
+
+def torbox_usenet_search_enabled(media_type, force=False):
+	if force: return True
+	if media_type == 'movie': return get_setting('fenlight.tb.usenet_search.movies', 'false') == 'true'
+	if media_type == 'episode': return get_setting('fenlight.tb.usenet_search.episodes', 'false') == 'true'
+	return False
 
 def easynews_language_filter():
 	enabled = get_setting('fenlight.easynews.filter_lang') == 'true'

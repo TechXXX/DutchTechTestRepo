@@ -1,3 +1,15 @@
+[COLOR dodgerblue][B]Session Note (2026-05-14, exact OpenSubtitles retry metadata)[/B][/COLOR]
+- Pass Fen Light's TMDb/show identifiers into the bundled a4k retry-pool metadata so OpenSubtitles can use exact parent-ID episode searches.
+- Include the TMDb id in the retry-pool subtitle cache key so selector searches do not reuse results across different shows with similar IMDb/title context.
+
+[COLOR dodgerblue][B]Session Note (2026-05-12, TorBox web download validation)[/B][/COLOR]
+- Confirm TorBox Web Download playback resolves and starts through Fen Light Patched.
+- Remove temporary scrape/resolver diagnostics while keeping the WebDL cloud support and `short_name` title-match fix.
+
+[COLOR dodgerblue][B]Session Note (2026-05-12, TorBox web downloads)[/B][/COLOR]
+- Add TorBox Web Download cloud support so hoster uploads such as GoFile-backed items appear in TorBox cloud scraping, browsing, resolving, and deleting alongside torrent and usenet items.
+- Use the TorBox `webdl/mylist`, `webdl/requestdl`, and `webdl/controlwebdownload` endpoints for these web-hosted downloads.
+
 [COLOR dodgerblue][B]Session Note (2026-05-12, live default settings seed)[/B][/COLOR]
 - Seed first-run Fen Light Patched settings from the live MacBook Kodi profile for non-secret preferences.
 - Default new installs to CocoScrapers, the live list/result/playback preferences, size filters, pagination, and update behavior while keeping credentials, tokens, account values, and local machine paths out of the package.
