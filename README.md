@@ -4,13 +4,16 @@ This repository is the GitHub Pages test repo for DutchTech Kodi packages.
 
 For the subtitle-selector migration, this repo matters because it is the test
 distribution channel for the patched Fenlight and patched a4k addons. It also
-now carries two Gemini-backed AI-search surfaces and two UI/navigation support
-addons:
+now carries two Gemini-backed AI-search surfaces, UI/navigation support addons,
+and the small production support helpers needed to mirror the main repo:
 
 - the standalone `plugin.video.fenlight.aisearch` fork
 - the in-addon AI Search entrypoint inside `plugin.video.fenlight.patched`
 - `plugin.video.themoviedb.helper.patched`
 - `skin.arctic.horizon.2.patched`
+- `plugin.program.famyt`
+- `plugin.program.autocompletion`
+- `script.module.autocompletion`
 
 ## Progress Snapshot
 
@@ -26,6 +29,9 @@ Gemini MVP:
   - uses `v3` AI-search cache keys for fresh interpretation/results
 - `plugin.video.fenlight.aisearch` source has been kept in sync with the same
   `v3` AI-search behavior, including multi-key Gemini fallback
+- all three Fen Light variants in this repo now share the TorBox Web Download
+  cloud support path, including scraping, browsing, resolving, and deleting
+  WebDL items alongside TorBox torrent and usenet cloud entries
 - both repo addons also carry the Fen compatibility restore for collection
   search:
   - `plugin://.../?mode=build_movie_list&action=tmdb_movies_search_sets&query=`
@@ -62,22 +68,17 @@ Gemini MVP:
   path for episode playback, so the OSD can expose a direct jump to the next
   episode without losing the safer stop-state behavior; the OSD action is hidden
   when Fenlight can confirm there is no next aired episode
-- the current live installed patched addon versions on this machine are:
-  - `plugin.video.fenlight.patched` `2.0.36`
-  - `service.subtitles.a4ksubtitles.patched` `3.23.27`
-  - `plugin.video.themoviedb.helper.patched` `6.15.2.1`
-- the live install currently lags this repo for patched Fenlight, patched a4k,
-  and patched TMDb Helper, but the core selector-runtime Python files are
-  still in sync with this repo for:
+- the current live installed patched addon versions on this machine are aligned
+  with the current TorBox/a4k/Fen test work:
+  - `plugin.video.fenlight.patched` `2.0.71`
+  - `service.subtitles.a4ksubtitles.patched` `3.23.38`
+  - `plugin.video.themoviedb.helper.patched` `6.15.2.11`
+- the live install currently carries the same TorBox WebDL runtime fix as this
+  repo for:
   - `plugin.video.fenlight.patched/resources/lib/modules/sources.py`
-  - `plugin.video.fenlight.patched/resources/lib/modules/player.py`
-  - `plugin.video.fenlight.patched/resources/lib/fenlightsubs/subtitle_selector.py`
-  - `service.subtitles.a4ksubtitles.patched/a4kSubtitles/search.py`
-  - `service.subtitles.a4ksubtitles.patched/a4kSubtitles/services/opensubtitles.py`
-  - `service.subtitles.a4ksubtitles.patched/a4kSubtitles/lib/kodi.py`
-- remaining live-vs-test drift is currently in addon versions, changelog text,
-  compiled caches, and some Fenlight skin XML files rather than the selector
-  handoff core
+  - `plugin.video.fenlight.patched/resources/lib/scrapers/tb_cloud.py`
+  - `plugin.video.fenlight.patched/resources/lib/apis/torbox_api.py`
+  - `plugin.video.fenlight.patched/resources/lib/indexers/torbox.py`
 - repo source-tree verification for the synced AI-search changes passed with:
   - `python3 -m py_compile` on both addon trees
   - `git diff --check`
@@ -156,11 +157,13 @@ FenLightAM Trakt list reliability follow-up:
 
 Current source-tree versions when this document was updated:
 
-- `plugin.video.fenlight` `2.0.14`
-  Baseline Fenlight package.
-- `plugin.video.fenlight.aisearch` `1.0.9`
-  Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery, and it can optionally turn language or nationality prompts like Korean, German, or Dutch into strict TMDb original-language filters.
-- `plugin.video.fenlight.patched` `2.0.68`
+- `plugin.video.fenlight` `2.0.15`
+  Baseline Fenlight package. It now also supports TorBox Web Download cloud
+  items so hoster uploads can be found, browsed, resolved, and deleted from the
+  TorBox cloud path.
+- `plugin.video.fenlight.aisearch` `1.0.10`
+  Standalone AI-search fork with its own addon id, profile, artwork, and repo package. It now also preserves named people separately from loose keywords so movie prompts can drive TMDb cast-aware discovery, can optionally turn language or nationality prompts like Korean, German, or Dutch into strict TMDb original-language filters, and supports TorBox Web Download cloud items through the same WebDL path as the other Fen variants.
+- `plugin.video.fenlight.patched` `2.0.71`
   Test build that bundles the selector locally and uses the centralized
   subtitle-aware retry-pool architecture. It now also includes an in-addon
   Gemini-backed AI Search entrypoint that still renders TMDb-backed lists and
@@ -178,7 +181,11 @@ Current source-tree versions when this document was updated:
   authorization, uses Trakt's returned token lifetime, refreshes Trakt tokens
   early with a refresh lock, includes a one-time migration for installs still
   carrying the old upstream Trakt app key, and now seeds first-run defaults
-  from the live patched profile for non-secret Fen preferences only.
+  from the live patched profile for non-secret Fen preferences only. It also
+  supports TorBox Web Download cloud items so hoster uploads can be found,
+  played, browsed, resolved, and deleted from TorBox cloud scraping and
+  browsing; the scraper prefers TorBox file `short_name` values so random
+  webhoster folder prefixes do not block title matching.
   It now also ships updated bundled default Trakt client credentials and keeps
   the settings-manager restore-default Trakt actions aligned with those new
   defaults. It now also prefers stable Trakt list IDs for custom/user list
@@ -222,7 +229,7 @@ Current source-tree versions when this document was updated:
   Fen Light Patched TMDb player definitions for default installs. It now also
   adds the custom Trakt QR auth dialog, styled QR generation helpers, QR file
   cleanup, and clipboard support used by the matching test auth flow.
-- `skin.arctic.horizon.2.patched` `0.8.30.11`
+- `skin.arctic.horizon.2.patched` `0.8.30.12`
   Patched Arctic Horizon 2 skin package intended to target the patched TMDb
   Helper addon id from this same repo. The current test build also clears stale
   recommendations dialog properties before opening a fresh helper window and
@@ -234,10 +241,18 @@ Current source-tree versions when this document was updated:
   OSD action while preserving stop behavior, and hide that action when Fenlight
   confirms there is no next aired episode. It now also rewires the default skin
   search menu to Fen Light movie, show, Gemini AI Search, and collection
-  lookups instead of the broader mixed-media shortcut set.
+  lookups instead of the broader mixed-media shortcut set. It also adds visible
+  voice-search affordances to the AH2 search field and Kodi virtual keyboard,
+  calling Kodi's built-in `VoiceRecognizer` action for Shield/Android installs.
+  The virtual keyboard mic now replaces the IP key, and Android voice input
+  auto-submits when the result arrives from either the mic button or Kodi's
+  native long-press voice-recognition path.
+  Fen Light's bundled subtitle retry-pool metadata now also passes parent TMDb
+  and IMDb show identifiers through to a4k so OpenSubtitles can use exact
+  episode searches.
 - `service.subtitles.a4ksubtitles` `3.23.8`
   Baseline a4k package kept as reference.
-- `service.subtitles.a4ksubtitles.patched` `3.23.37`
+- `service.subtitles.a4ksubtitles.patched` `3.23.38`
   Test subtitle addon used with selector-aware Fenlight. The current test build
   keeps AI subtitle translation off until an API key is configured, leaves the
   API key field editable while AI is off, and disables stale saved AI toggles
@@ -252,15 +267,28 @@ Current source-tree versions when this document was updated:
   still contains the old full GPT-4.1 model, and keeps the bundled translator
   import-compatible with Kodi Windows builds that still run Python `3.8.15`.
   It also
-  searches OpenSubtitles TV episodes by parent show IMDb id plus season/episode
-  before text fallbacks, so numeric show titles like `1923` return the full
-  episode subtitle set for selector ranking. It also keeps repeated in-play
+  searches OpenSubtitles TV episodes by parent show TMDb id plus season/episode,
+  falling back to parent IMDb only when TMDb is missing. In API-mode selector
+  searches it now returns no OpenSubtitles rows instead of broad title fallbacks
+  when neither exact ID exists, validates returned TV rows against parent ID,
+  season, and episode, and keeps AI/machine-translated Dutch rows available as
+  ranked fallback while normal Dutch rows remain preferred before any GPT
+  fallback. It also keeps repeated in-play
   manual subtitle search working after a manual pick by returning the chosen
   subtitle through Kodi's normal subtitle-service result path, while manual
   subtitle rows now show `[AI]`, `[MT]`, and OpenSubtitles-backed `[HD]`
   badges.
 - `service.kodi.synctool` `0.2.39`
   Separate Google Drive sync addon that is unrelated to subtitle-selector work.
+- `plugin.program.famyt` `0.4.2`
+  Private family setup helper copied from the production release line. It
+  contains no credentials; operational notes are kept outside the public
+  repository.
+- `plugin.program.autocompletion` `2.1.4`
+  Bundled virtual keyboard autocomplete helper so Arctic Fuse 3 can install it
+  from this repo instead of the broken upstream `2.1.3` package URL.
+- `script.module.autocompletion` `2.1.1`
+  Library dependency for the virtual keyboard autocomplete helper.
 - `repository.dutchtechtestrepo` `1.0.10`
   The repository addon that Kodi installs first.
 
@@ -282,6 +310,13 @@ Current source-tree versions when this document was updated:
   Baseline a4k source for comparison or non-patched shipping.
 - `service.kodi.synctool/`
   Unrelated sync addon.
+- `plugin.program.famyt/`
+  Private family setup helper source. Credentials are not stored in this
+  repository.
+- `plugin.program.autocompletion/`
+  Bundled virtual keyboard autocomplete helper source.
+- `script.module.autocompletion/`
+  Bundled virtual keyboard autocomplete library source.
 - `scripts/`
   Repo build and publish helpers.
 - `zips/`
