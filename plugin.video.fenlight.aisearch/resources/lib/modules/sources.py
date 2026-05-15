@@ -779,7 +779,11 @@ class Sources():
 	def resolve_internal(self, scrape_provider, item_id, url_dl, direct_debrid_link=False):
 		url = None
 		try:
-			if direct_debrid_link or scrape_provider == 'folders': url = url_dl
+			if scrape_provider == 'tb_cloud' and direct_debrid_link in ('usenet', 'webdl'):
+				debrid_function = self.debrid_importer(scrape_provider)()
+				if direct_debrid_link == 'usenet': url = debrid_function.unrestrict_usenet(url_dl)
+				else: url = debrid_function.unrestrict_webdl(url_dl)
+			elif direct_debrid_link or scrape_provider == 'folders': url = url_dl
 			elif scrape_provider == 'easynews':
 				from indexers.easynews import resolve_easynews
 				url = resolve_easynews({'url_dl': url_dl, 'play': 'false'})
