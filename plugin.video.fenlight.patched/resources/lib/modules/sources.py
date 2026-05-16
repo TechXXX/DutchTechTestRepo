@@ -964,12 +964,51 @@ class Sources():
 		self._kill_progress_dialog()
 		return FenLightPlayer().run(link, 'video')
 
+	def _sports_event_autoplay_choice(self, results):
+		try:
+			if not self.autoplay or self.background or not results: return None
+			top_result = results[0]
+			if not top_result.get('sports_event_cloud'): return None
+			pack_id = top_result.get('sports_event_pack_id')
+			if not pack_id: return None
+			choices = [i for i in results if i.get('sports_event_cloud') and i.get('sports_event_pack_id') == pack_id]
+			if len(choices) < 2: return None
+			choices.sort(key=self._sports_event_choice_sort)
+			list_items = [{'line1': '%s | %s | %s' % (i.get('sports_event_part') or 'Event Video', i.get('quality', ''), i.get('size_label', '')),
+						'line2': clean_file_name(i.get('name', '')).upper()} for i in choices]
+			kwargs = {'items': json.dumps(list_items), 'heading': 'Choose Event Video', 'enumerate': 'false', 'multi_line': 'true'}
+			chosen_result = select_dialog(choices, **kwargs)
+			if chosen_result is None: return 'cancel'
+			return chosen_result
+		except:
+			logger('Fen Light Patched', 'sports_event_autoplay_choice exception | error=%s' % traceback.format_exc().strip())
+			return None
+
+	def _sports_event_choice_sort(self, item):
+		part = (item.get('sports_event_part') or '').lower()
+		part_rank = {'main card': 0, 'prelims': 1, 'early prelims': 2, 'event video': 3}.get(part, 9)
+		try: size_rank = -float(item.get('size') or 0)
+		except: size_rank = 0
+		return (part_rank, size_rank, item.get('name', '').lower())
+
+	def _sports_event_results_after_choice(self, results, source):
+		pack_id = source.get('sports_event_pack_id')
+		source_id = source.get('id')
+		if not pack_id or not source_id: return results
+		return [i for i in results if not (i.get('sports_event_cloud') and i.get('sports_event_pack_id') == pack_id and i.get('id') != source_id)]
+
 	def play_file(self, results, source={}):
 		self.playback_successful, self.cancel_all_playback = None, False
 		try:
 			hide_busy_dialog()
 			url = None
 			results = [i for i in results if not 'Uncached' in i.get('cache_provider', '')]
+			if not source:
+				sports_event_choice = self._sports_event_autoplay_choice(results)
+				if sports_event_choice == 'cancel': return self._kill_progress_dialog()
+				if sports_event_choice:
+					source = sports_event_choice
+					results = self._sports_event_results_after_choice(results, source)
 			if not source: source = results[0]
 			items = [source]
 			if not self.limit_resolve: 
