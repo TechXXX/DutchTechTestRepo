@@ -1,3 +1,7 @@
+[COLOR dodgerblue][B]Session Note (2026-05-17, TorBox Usenet Search polish)[/B][/COLOR]
+- Show TorBox Usenet Search results as TB USENET/NZB without adding a release-title prefix.
+- Keep TorBox Usenet Search rows mixed into the normal quality and size sorting instead of pinning them with TorBox cloud sort-to-top.
+
 [COLOR dodgerblue][B]Session Note (2026-05-14, exact OpenSubtitles retry metadata)[/B][/COLOR]
 - Pass Fen Light's TMDb/show identifiers into the bundled a4k retry-pool metadata so OpenSubtitles can use exact parent-ID episode searches.
 - Include the TMDb id in the retry-pool subtitle cache key so selector searches do not reuse results across different shows with similar IMDb/title context.

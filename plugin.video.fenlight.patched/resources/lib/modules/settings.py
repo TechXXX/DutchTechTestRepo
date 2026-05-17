@@ -256,7 +256,7 @@ def provider_sort_ranks():
 	ed_priority = int(get_setting('fenlight.ed.priority', '10'))
 	tb_priority = int(get_setting('fenlight.tb.priority', '10'))
 	return {'easynews': en_priority, 'real-debrid': rd_priority, 'premiumize.me': pm_priority, 'alldebrid': ad_priority, 'offcloud': oc_priority, 'easydebrid': ed_priority,
-			'torbox': tb_priority, 'rd_cloud': rd_priority, 'pm_cloud': pm_priority, 'ad_cloud': ad_priority, 'oc_cloud': oc_priority, 'tb_cloud': tb_priority, 'folders': 0}
+			'torbox': tb_priority, 'tb usenet': tb_priority, 'rd_cloud': rd_priority, 'pm_cloud': pm_priority, 'ad_cloud': ad_priority, 'oc_cloud': oc_priority, 'tb_cloud': tb_priority, 'folders': 0}
 
 def sort_to_top(provider):
 	return get_setting(sort_to_top_dict[provider]) == 'true'
@@ -291,7 +291,7 @@ def scraping_settings():
 		highlight_720P = get_setting('fenlight.scraper_720p_highlight', 'FF3C9900')
 		highlight_SD = get_setting('fenlight.scraper_SD_highlight', 'FF0166FF')
 	return {'highlight_type': highlight_type, 'real-debrid': rd_highlight, 'premiumize': pm_highlight, 'alldebrid': ad_highlight,
-			'offcloud': oc_highlight, 'easydebrid': ed_highlight, 'torbox': tb_highlight, 'rd_cloud': debrid_cloud_highlight,
+			'offcloud': oc_highlight, 'easydebrid': ed_highlight, 'torbox': tb_highlight, 'tb usenet': tb_highlight, 'rd_cloud': debrid_cloud_highlight,
 			'pm_cloud': debrid_cloud_highlight, 'ad_cloud': debrid_cloud_highlight, 'oc_cloud': debrid_cloud_highlight, 'tb_cloud': debrid_cloud_highlight,
 			'easynews': easynews_highlight, 'folders': folders_highlight, '4k': highlight_4K, '1080p': highlight_1080P, '720p': highlight_720P, 'sd': highlight_SD}
 
