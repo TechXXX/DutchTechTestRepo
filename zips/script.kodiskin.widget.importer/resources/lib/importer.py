@@ -11,6 +11,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,7 +34,9 @@ ADDON_NAME = "KodiSkin Widget Importer"
 SHORTCUTS_DATA = "special://profile/addon_data/script.skinshortcuts/"
 ADDON_DATA = "special://profile/addon_data/{}/".format(ADDON_ID)
 INCLUDE_NAME = "script-skinshortcuts-includes.xml"
-USER_AGENT = "{}/0.1.1 Kodi".format(ADDON_ID)
+USER_AGENT = "{}/0.1.3 Kodi".format(ADDON_ID)
+IMPORT_MODE_OVERWRITE = "overwrite"
+IMPORT_MODE_APPEND = "append"
 PCLOUD_API_DEFAULT = "https://api.pcloud.com"
 PCLOUD_API_EU = "https://eapi.pcloud.com"
 PLUGIN_VIDEO_RE = re.compile(r"plugin://(plugin\.video\.[A-Za-z0-9_.-]+)")
@@ -179,15 +182,18 @@ def main() -> None:
             )
 
         video_rewrite = choose_video_addon_rewrite(package, ui)
+        import_mode = choose_import_mode(ui)
 
-        if not confirm_import(package, target_skin, video_rewrite, ui):
+        if not confirm_import(package, target_skin, video_rewrite, import_mode, ui):
             return
 
-        backup_dir = import_shortcuts(package.files, target_skin, video_rewrite, ui)
+        backup_dir = import_shortcuts(package.files, target_skin, video_rewrite, import_mode, ui)
         save_last_source(source)
 
         include_note = ""
-        if package.include_path and ui.yesno(
+        if package.include_path and import_mode == IMPORT_MODE_APPEND:
+            include_note = "Generated include skipped in add-on mode; Skin Shortcuts will rebuild it."
+        elif package.include_path and ui.yesno(
             ADDON_NAME,
             "The ZIP also contains a generated include.",
             "Copy it to the active skin too?",
@@ -244,6 +250,7 @@ def confirm_import(
     package: ShortcutPackage,
     target_skin: str,
     video_rewrite: Optional[VideoAddonRewrite],
+    import_mode: str,
     ui: KodiUI,
 ) -> bool:
     data_count = len([item for item in package.files if item.kind == "data"])
@@ -253,12 +260,15 @@ def confirm_import(
         rewrite_note = "Video add-ons: {} -> {}".format(
             ", ".join(video_rewrite.source_ids), video_rewrite.target_id
         )
+    mode_note = "Mode: overwrite matching local files"
+    if import_mode == IMPORT_MODE_APPEND:
+        mode_note = "Mode: add onto existing local files"
     return ui.yesno(
         ADDON_NAME,
         "Source skin: {}".format(package.source_skin),
         "Target skin: {}".format(target_skin),
-        "{}. Import {} DATA and {} properties file(s)?".format(
-            rewrite_note, data_count, prop_count
+        "{}. {}. Import {} DATA and {} properties file(s)?".format(
+            mode_note, rewrite_note, data_count, prop_count
         ),
     )
 
@@ -521,10 +531,22 @@ def append_unique(values: List[str], value: str) -> None:
         values.append(value)
 
 
+def choose_import_mode(ui: KodiUI) -> str:
+    options = [
+        "Overwrite matching local widget files",
+        "Add onto existing local widget files",
+    ]
+    choice = ui.select("Import mode", options)
+    if choice < 0:
+        raise ImportCancelled()
+    return IMPORT_MODE_APPEND if choice == 1 else IMPORT_MODE_OVERWRITE
+
+
 def import_shortcuts(
     files: Sequence[ImportFile],
     target_skin: str,
     video_rewrite: Optional[VideoAddonRewrite],
+    import_mode: str,
     ui: KodiUI,
 ) -> str:
     ensure_vfs_dir(SHORTCUTS_DATA)
@@ -542,10 +564,13 @@ def import_shortcuts(
 
     for item in files:
         dest = vfs_join(SHORTCUTS_DATA, item.target_name)
-        if vfs_exists(dest):
+        if vfs_exists(dest) and import_mode == IMPORT_MODE_OVERWRITE:
             delete_vfs(dest)
-        copy_import_file(item.source_path, dest, video_rewrite)
-        ui.log("Imported {}".format(item.target_name))
+        if import_mode == IMPORT_MODE_APPEND and vfs_exists(dest):
+            merge_import_file(item, dest, video_rewrite, ui)
+        else:
+            copy_import_file(item.source_path, dest, video_rewrite)
+            ui.log("Imported {}".format(item.target_name))
 
     hash_path = vfs_join(SHORTCUTS_DATA, target_hash_name)
     if vfs_exists(hash_path):
@@ -575,13 +600,120 @@ def import_generated_include(
 def copy_import_file(
     source_path: Path, dest: str, video_rewrite: Optional[VideoAddonRewrite]
 ) -> None:
-    if not video_rewrite:
-        copy_vfs(str(source_path), dest)
-        return
+    data = read_import_bytes(source_path, video_rewrite)
+    write_bytes_vfs(dest, data)
 
+
+def read_import_bytes(
+    source_path: Path, video_rewrite: Optional[VideoAddonRewrite]
+) -> bytes:
     data = source_path.read_bytes()
-    transformed = rewrite_video_addons_in_bytes(data, video_rewrite)
-    write_bytes_vfs(dest, transformed)
+    if not video_rewrite:
+        return data
+    return rewrite_video_addons_in_bytes(data, video_rewrite)
+
+
+def merge_import_file(
+    item: ImportFile,
+    dest: str,
+    video_rewrite: Optional[VideoAddonRewrite],
+    ui: KodiUI,
+) -> None:
+    source_data = read_import_bytes(item.source_path, video_rewrite)
+    if item.kind == "data":
+        added = merge_shortcuts_data(dest, source_data)
+        ui.log("Merged {} shortcut(s) into {}".format(added, item.target_name))
+        return
+    if item.kind == "properties":
+        added = merge_properties_data(dest, source_data)
+        ui.log("Merged {} property row(s) into {}".format(added, item.target_name))
+        return
+    raise ImportErrorWithMessage("Cannot merge file type: {}".format(item.kind))
+
+
+def merge_shortcuts_data(dest: str, source_data: bytes) -> int:
+    try:
+        target_root = ET.fromstring(read_bytes_vfs(dest))
+        source_root = ET.fromstring(source_data)
+    except ET.ParseError as exc:
+        raise ImportErrorWithMessage("Could not merge shortcut XML: {}".format(exc))
+    if target_root.tag != "shortcuts" or source_root.tag != "shortcuts":
+        raise ImportErrorWithMessage("Expected Skin Shortcuts XML with a shortcuts root.")
+
+    signatures = {
+        shortcut_signature(shortcut) for shortcut in target_root.findall("shortcut")
+    }
+    added = 0
+    for shortcut in list(source_root.findall("shortcut")):
+        signature = shortcut_signature(shortcut)
+        if signature in signatures:
+            continue
+        target_root.append(shortcut)
+        signatures.add(signature)
+        added += 1
+
+    indent_element(target_root)
+    write_bytes_vfs(dest, ET.tostring(target_root, encoding="utf-8") + b"\n")
+    return added
+
+
+def shortcut_signature(shortcut: ET.Element) -> Tuple[str, str, str, str]:
+    return (
+        child_text(shortcut, "defaultID"),
+        child_text(shortcut, "label"),
+        child_text(shortcut, "label2"),
+        child_text(shortcut, "action"),
+    )
+
+
+def child_text(element: ET.Element, tag: str) -> str:
+    child = element.find(tag)
+    return (child.text or "").strip() if child is not None else ""
+
+
+def merge_properties_data(dest: str, source_data: bytes) -> int:
+    try:
+        target_rows = json.loads(read_bytes_vfs(dest).decode("utf-8-sig", "replace"))
+        source_rows = json.loads(source_data.decode("utf-8-sig", "replace"))
+    except Exception as exc:
+        raise ImportErrorWithMessage("Could not merge properties JSON: {}".format(exc))
+    if not isinstance(target_rows, list) or not isinstance(source_rows, list):
+        raise ImportErrorWithMessage("Expected Skin Shortcuts properties to be a list.")
+
+    existing_keys = {property_row_key(row) for row in target_rows}
+    added = 0
+    for row in source_rows:
+        key = property_row_key(row)
+        if key in existing_keys:
+            continue
+        target_rows.append(row)
+        existing_keys.add(key)
+        added += 1
+
+    payload = json.dumps(target_rows, ensure_ascii=False, indent=4).encode("utf-8")
+    write_bytes_vfs(dest, payload + b"\n")
+    return added
+
+
+def property_row_key(row: object) -> Tuple[object, ...]:
+    if isinstance(row, list) and len(row) >= 3:
+        return tuple(row[:3])
+    return (json.dumps(row, sort_keys=True, ensure_ascii=False),)
+
+
+def indent_element(element: ET.Element, level: int = 0) -> None:
+    indent = "\n" + "\t" * level
+    child_indent = "\n" + "\t" * (level + 1)
+    children = list(element)
+    if children:
+        if not element.text or not element.text.strip():
+            element.text = child_indent
+        for child in children:
+            indent_element(child, level + 1)
+        if not children[-1].tail or not children[-1].tail.strip():
+            children[-1].tail = indent
+    if level and (not element.tail or not element.tail.strip()):
+        element.tail = indent
 
 
 def rewrite_video_addons_in_bytes(data: bytes, video_rewrite: VideoAddonRewrite) -> bytes:
@@ -844,6 +976,10 @@ def copy_vfs(source: str, dest: str) -> None:
     dest_path = translate_path(dest)
     dest_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(str(source_path), str(dest_path))
+
+
+def read_bytes_vfs(path: str) -> bytes:
+    return translate_path(path).read_bytes()
 
 
 def write_bytes_vfs(dest: str, data: bytes) -> None:

@@ -36,8 +36,16 @@ The retarget only changes the `plugin://plugin.video...` add-on ID. It leaves th
 2. Run **KodiSkin Widget Importer** from Program add-ons.
 3. Paste a pCloud public link, direct ZIP URL, local ZIP path, or network ZIP path, or browse for a local ZIP.
 4. Choose whether to keep or retarget detected video add-on widget paths.
-5. Confirm the source skin and target skin shown by the add-on.
-6. Reload the skin or restart Kodi.
+5. Choose whether to overwrite matching local widget files or add onto them.
+6. Confirm the source skin and target skin shown by the add-on.
+7. Reload the skin or restart Kodi.
+
+## Import modes
+
+- **Overwrite matching local widget files** keeps the previous behavior: matching Skin Shortcuts DATA/properties files are replaced after a backup is made.
+- **Add onto existing local widget files** merges structurally: imported shortcut XML entries are appended when they are not already present, and imported properties are added only when they do not conflict with an existing menu/id/property key.
+
+Generated includes are not copied in add-on mode because they are compiled output. The local Skin Shortcuts hash is still removed so Kodi can rebuild the include from the merged data.
 
 Backups of overwritten files are stored under:
 
