@@ -26,7 +26,7 @@ It does not import the source `.hash` file. Instead it backs up and removes the 
 
 Before import, the add-on scans widget paths for Fen-style video add-ons. If it finds one, it asks whether to keep the original add-on IDs or retarget those widget links to another video add-on.
 
-Built-in choices include Fen, Fen Light, Fen Light Patched, Fen Light AI Search, the KodiEnglish Fen Light forks, POV, Umbrella, Seren, Ezra, The Coalition, and Dradis. It does not list every installed video add-on, so unrelated add-ons such as YouTube are not offered. You can also enter a custom `plugin.video.*` add-on ID.
+Built-in choices include Fen, Fen Light, Fen Light Patched, Fen Light AI Search, and the KodiEnglish Fen Light forks. It does not list every installed video add-on, because these widget paths are Fen/Fen Light-specific and are not expected to work with unrelated video add-ons. You can also enter a custom Fen/Fen Light-style add-on ID such as `plugin.video.fenlight.yourfork`.
 
 The retarget only changes the `plugin://plugin.video...` add-on ID. It leaves the rest of the widget URL untouched.
 

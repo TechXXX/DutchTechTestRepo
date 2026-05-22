@@ -378,7 +378,7 @@ INFO: For latest changes see Changelog within Tools of add-on.</news>
     </addon>
     <addon id="script.kodiskin.widget.importer"
            name="KodiSkin Widget Importer"
-           version="0.1.3"
+           version="0.1.4"
            provider-name="Kalter">
         <requires>
             <import addon="xbmc.python" version="3.0.0" />

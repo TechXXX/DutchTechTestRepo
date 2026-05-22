@@ -34,7 +34,7 @@ ADDON_NAME = "KodiSkin Widget Importer"
 SHORTCUTS_DATA = "special://profile/addon_data/script.skinshortcuts/"
 ADDON_DATA = "special://profile/addon_data/{}/".format(ADDON_ID)
 INCLUDE_NAME = "script-skinshortcuts-includes.xml"
-USER_AGENT = "{}/0.1.3 Kodi".format(ADDON_ID)
+USER_AGENT = "{}/0.1.4 Kodi".format(ADDON_ID)
 IMPORT_MODE_OVERWRITE = "overwrite"
 IMPORT_MODE_APPEND = "append"
 PCLOUD_API_DEFAULT = "https://api.pcloud.com"
@@ -52,12 +52,6 @@ KNOWN_VIDEO_TARGETS = [
     ("plugin.video.fenlight.kodienglish", "Fen Light English"),
     ("plugin.video.fenlight.patched.kodienglish", "Fen Light Patched English"),
     ("plugin.video.fen", "Fen"),
-    ("plugin.video.pov", "POV"),
-    ("plugin.video.umbrella", "Umbrella"),
-    ("plugin.video.seren", "Seren"),
-    ("plugin.video.ezra", "Ezra"),
-    ("plugin.video.coalition", "The Coalition"),
-    ("plugin.video.dradis", "Dradis"),
 ]
 
 
@@ -436,7 +430,7 @@ def choose_video_addon_rewrite(
     target_ids = build_video_target_choices(source_ids)
     labels = ["Keep original add-ons"]
     labels.extend(video_target_label(addon_id) for addon_id in target_ids)
-    labels.append("Custom add-on id")
+    labels.append("Custom Fen/Fen Light add-on id")
 
     choice = ui.select("Widget video add-on: {}".format(scan_label), labels)
     if choice < 0:
@@ -444,14 +438,16 @@ def choose_video_addon_rewrite(
     if choice == 0:
         return None
     if choice == len(labels) - 1:
-        target_id = strip_quotes(ui.input("Target video add-on id", source_ids[0]))
+        target_id = strip_quotes(ui.input("Target Fen/Fen Light add-on id", source_ids[0]))
         if not target_id:
             raise ImportCancelled()
     else:
         target_id = target_ids[choice - 1]
 
-    if not looks_like_video_addon_id(target_id):
-        raise ImportErrorWithMessage("Invalid video add-on id: {}".format(target_id))
+    if not looks_like_fen_video_addon_id(target_id):
+        raise ImportErrorWithMessage(
+            "Invalid Fen/Fen Light add-on id: {}".format(target_id)
+        )
     if len(source_ids) == 1 and source_ids[0] == target_id:
         return None
     return VideoAddonRewrite(source_ids, target_id)
@@ -495,23 +491,11 @@ def is_switchable_video_addon(addon_id: str) -> bool:
         return False
     if addon_id in {target_id for target_id, _name in KNOWN_VIDEO_TARGETS}:
         return True
-    known_fragments = (
-        ".fen",
-        ".fenlight",
-        ".pov",
-        ".umbrella",
-        ".seren",
-        ".ezra",
-        ".coalition",
-        ".dradis",
-    )
-    return addon_id.startswith("plugin.video.") and any(
-        fragment in addon_id for fragment in known_fragments
-    )
+    return looks_like_fen_video_addon_id(addon_id)
 
 
-def looks_like_video_addon_id(value: str) -> bool:
-    return bool(re.match(r"^plugin\.video\.[A-Za-z0-9_.-]+$", value))
+def looks_like_fen_video_addon_id(value: str) -> bool:
+    return bool(re.match(r"^plugin\.video\.fen(?:light)?(?:[._-][A-Za-z0-9_.-]+)?$", value))
 
 
 def video_target_label(addon_id: str) -> str:
