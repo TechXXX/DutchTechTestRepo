@@ -22,13 +22,22 @@ becomes:
 
 It does not import the source `.hash` file. Instead it backs up and removes the local hash for the active skin so Skin Shortcuts rebuilds the generated include after you reload the skin or restart Kodi.
 
+## Video add-on retargeting
+
+Before import, the add-on scans widget paths for Fen-style video add-ons. If it finds one, it asks whether to keep the original add-on IDs or retarget those widget links to another video add-on.
+
+Built-in choices include Fen, Fen Light, Fen Light Patched, Fen Light AI Search, the KodiEnglish Fen Light forks, POV, Umbrella, Seren, Ezra, The Coalition, and Dradis. It does not list every installed video add-on, so unrelated add-ons such as YouTube are not offered. You can also enter a custom `plugin.video.*` add-on ID.
+
+The retarget only changes the `plugin://plugin.video...` add-on ID. It leaves the rest of the widget URL untouched.
+
 ## Usage
 
 1. Install the ZIP package for this add-on in Kodi.
 2. Run **KodiSkin Widget Importer** from Program add-ons.
 3. Paste a pCloud public link, direct ZIP URL, local ZIP path, or network ZIP path, or browse for a local ZIP.
-4. Confirm the source skin and target skin shown by the add-on.
-5. Reload the skin or restart Kodi.
+4. Choose whether to keep or retarget detected video add-on widget paths.
+5. Confirm the source skin and target skin shown by the add-on.
+6. Reload the skin or restart Kodi.
 
 Backups of overwritten files are stored under:
 

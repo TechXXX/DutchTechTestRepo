@@ -33,9 +33,29 @@ ADDON_NAME = "KodiSkin Widget Importer"
 SHORTCUTS_DATA = "special://profile/addon_data/script.skinshortcuts/"
 ADDON_DATA = "special://profile/addon_data/{}/".format(ADDON_ID)
 INCLUDE_NAME = "script-skinshortcuts-includes.xml"
-USER_AGENT = "{}/0.1.0 Kodi".format(ADDON_ID)
+USER_AGENT = "{}/0.1.1 Kodi".format(ADDON_ID)
 PCLOUD_API_DEFAULT = "https://api.pcloud.com"
 PCLOUD_API_EU = "https://eapi.pcloud.com"
+PLUGIN_VIDEO_RE = re.compile(r"plugin://(plugin\.video\.[A-Za-z0-9_.-]+)")
+HELPER_VIDEO_ADDON_IDS = {
+    "plugin.video.themoviedb.helper",
+    "plugin.video.themoviedb.helper.patched",
+    "plugin.video.themoviedb.helper.patched.kodienglish",
+}
+KNOWN_VIDEO_TARGETS = [
+    ("plugin.video.fenlight.patched", "Fen Light Patched"),
+    ("plugin.video.fenlight.aisearch", "Fen Light AI Search"),
+    ("plugin.video.fenlight", "Fen Light"),
+    ("plugin.video.fenlight.kodienglish", "Fen Light English"),
+    ("plugin.video.fenlight.patched.kodienglish", "Fen Light Patched English"),
+    ("plugin.video.fen", "Fen"),
+    ("plugin.video.pov", "POV"),
+    ("plugin.video.umbrella", "Umbrella"),
+    ("plugin.video.seren", "Seren"),
+    ("plugin.video.ezra", "Ezra"),
+    ("plugin.video.coalition", "The Coalition"),
+    ("plugin.video.dradis", "Dradis"),
+]
 
 
 class ImportCancelled(Exception):
@@ -60,6 +80,12 @@ class ShortcutPackage:
     files: List[ImportFile]
     include_path: Optional[Path]
     skipped_hashes: List[Path]
+
+
+@dataclass(frozen=True)
+class VideoAddonRewrite:
+    source_ids: Tuple[str, ...]
+    target_id: str
 
 
 class KodiUI:
@@ -152,10 +178,12 @@ def main() -> None:
                 "No Skin Shortcuts DATA/properties files were found in that ZIP."
             )
 
-        if not confirm_import(package, target_skin, ui):
+        video_rewrite = choose_video_addon_rewrite(package, ui)
+
+        if not confirm_import(package, target_skin, video_rewrite, ui):
             return
 
-        backup_dir = import_shortcuts(package.files, target_skin, ui)
+        backup_dir = import_shortcuts(package.files, target_skin, video_rewrite, ui)
         save_last_source(source)
 
         include_note = ""
@@ -165,14 +193,23 @@ def main() -> None:
             "Copy it to the active skin too?",
             "Choose No if you want Skin Shortcuts to rebuild it.",
         ):
-            include_backup = import_generated_include(package.include_path, ui)
+            include_backup = import_generated_include(package.include_path, video_rewrite, ui)
             include_note = "Generated include backup: {}".format(include_backup)
+
+        rewrite_note = ""
+        if video_rewrite:
+            rewrite_note = "Retargeted widgets to {}.".format(video_rewrite.target_id)
+        final_note = "Reload the skin or restart Kodi so widgets rebuild."
+        if rewrite_note and include_note:
+            final_note = "{} {}".format(rewrite_note, include_note)
+        elif rewrite_note or include_note:
+            final_note = rewrite_note or include_note
 
         ui.ok(
             ADDON_NAME,
             "Imported {} Skin Shortcuts files.".format(len(package.files)),
             "Backup: {}".format(backup_dir),
-            include_note or "Reload the skin or restart Kodi so widgets rebuild.",
+            final_note,
         )
     except ImportCancelled:
         ui.log("Import cancelled")
@@ -203,14 +240,26 @@ def choose_source(ui: KodiUI) -> str:
     return strip_quotes(ui.input("Paste widget ZIP, pCloud link, or path", last_source))
 
 
-def confirm_import(package: ShortcutPackage, target_skin: str, ui: KodiUI) -> bool:
+def confirm_import(
+    package: ShortcutPackage,
+    target_skin: str,
+    video_rewrite: Optional[VideoAddonRewrite],
+    ui: KodiUI,
+) -> bool:
     data_count = len([item for item in package.files if item.kind == "data"])
     prop_count = len([item for item in package.files if item.kind == "properties"])
+    rewrite_note = "Video add-ons: unchanged"
+    if video_rewrite:
+        rewrite_note = "Video add-ons: {} -> {}".format(
+            ", ".join(video_rewrite.source_ids), video_rewrite.target_id
+        )
     return ui.yesno(
         ADDON_NAME,
         "Source skin: {}".format(package.source_skin),
         "Target skin: {}".format(target_skin),
-        "Import {} DATA and {} properties file(s)?".format(data_count, prop_count),
+        "{}. Import {} DATA and {} properties file(s)?".format(
+            rewrite_note, data_count, prop_count
+        ),
     )
 
 
@@ -358,7 +407,126 @@ def candidate_score(path: Path, root: Path) -> Tuple[int, int]:
     return (2 if in_addon_data else 1, shallow)
 
 
-def import_shortcuts(files: Sequence[ImportFile], target_skin: str, ui: KodiUI) -> str:
+def choose_video_addon_rewrite(
+    package: ShortcutPackage, ui: KodiUI
+) -> Optional[VideoAddonRewrite]:
+    scanned = scan_video_addons(package)
+    source_ids = tuple(
+        addon_id
+        for addon_id, _count in sorted(scanned.items(), key=lambda item: (-item[1], item[0]))
+        if is_switchable_video_addon(addon_id)
+    )
+    if not source_ids:
+        return None
+
+    scan_label = ", ".join(
+        "{} ({})".format(video_addon_name(addon_id), scanned[addon_id])
+        for addon_id in source_ids
+    )
+    target_ids = build_video_target_choices(source_ids)
+    labels = ["Keep original add-ons"]
+    labels.extend(video_target_label(addon_id) for addon_id in target_ids)
+    labels.append("Custom add-on id")
+
+    choice = ui.select("Widget video add-on: {}".format(scan_label), labels)
+    if choice < 0:
+        raise ImportCancelled()
+    if choice == 0:
+        return None
+    if choice == len(labels) - 1:
+        target_id = strip_quotes(ui.input("Target video add-on id", source_ids[0]))
+        if not target_id:
+            raise ImportCancelled()
+    else:
+        target_id = target_ids[choice - 1]
+
+    if not looks_like_video_addon_id(target_id):
+        raise ImportErrorWithMessage("Invalid video add-on id: {}".format(target_id))
+    if len(source_ids) == 1 and source_ids[0] == target_id:
+        return None
+    return VideoAddonRewrite(source_ids, target_id)
+
+
+def scan_video_addons(package: ShortcutPackage) -> Dict[str, int]:
+    counts: Dict[str, int] = {}
+    paths = [item.source_path for item in package.files]
+    if package.include_path:
+        paths.append(package.include_path)
+
+    for path in paths:
+        try:
+            text = path.read_text("utf-8", "replace")
+        except Exception:
+            continue
+        for addon_id in PLUGIN_VIDEO_RE.findall(text):
+            counts[addon_id] = counts.get(addon_id, 0) + 1
+    return counts
+
+
+def build_video_target_choices(source_ids: Sequence[str]) -> List[str]:
+    target_ids: List[str] = []
+    for addon_id, _name in KNOWN_VIDEO_TARGETS:
+        append_unique(target_ids, addon_id)
+    return target_ids
+
+
+def addon_is_installed(addon_id: str) -> bool:
+    if xbmcaddon:
+        try:
+            xbmcaddon.Addon(addon_id).getAddonInfo("id")
+            return True
+        except Exception:
+            return False
+    return False
+
+
+def is_switchable_video_addon(addon_id: str) -> bool:
+    if addon_id in HELPER_VIDEO_ADDON_IDS:
+        return False
+    if addon_id in {target_id for target_id, _name in KNOWN_VIDEO_TARGETS}:
+        return True
+    known_fragments = (
+        ".fen",
+        ".fenlight",
+        ".pov",
+        ".umbrella",
+        ".seren",
+        ".ezra",
+        ".coalition",
+        ".dradis",
+    )
+    return addon_id.startswith("plugin.video.") and any(
+        fragment in addon_id for fragment in known_fragments
+    )
+
+
+def looks_like_video_addon_id(value: str) -> bool:
+    return bool(re.match(r"^plugin\.video\.[A-Za-z0-9_.-]+$", value))
+
+
+def video_target_label(addon_id: str) -> str:
+    installed_note = "installed" if addon_is_installed(addon_id) else "known"
+    return "{} [{}]".format(video_addon_name(addon_id), installed_note)
+
+
+def video_addon_name(addon_id: str) -> str:
+    for known_id, known_name in KNOWN_VIDEO_TARGETS:
+        if addon_id == known_id:
+            return "{} ({})".format(known_name, addon_id)
+    return addon_id
+
+
+def append_unique(values: List[str], value: str) -> None:
+    if value not in values:
+        values.append(value)
+
+
+def import_shortcuts(
+    files: Sequence[ImportFile],
+    target_skin: str,
+    video_rewrite: Optional[VideoAddonRewrite],
+    ui: KodiUI,
+) -> str:
     ensure_vfs_dir(SHORTCUTS_DATA)
     stamp = time.strftime("%Y%m%d-%H%M%S")
     backup_dir = vfs_join(ADDON_DATA, "backups", stamp, "script.skinshortcuts")
@@ -376,7 +544,7 @@ def import_shortcuts(files: Sequence[ImportFile], target_skin: str, ui: KodiUI) 
         dest = vfs_join(SHORTCUTS_DATA, item.target_name)
         if vfs_exists(dest):
             delete_vfs(dest)
-        copy_vfs(str(item.source_path), dest)
+        copy_import_file(item.source_path, dest, video_rewrite)
         ui.log("Imported {}".format(item.target_name))
 
     hash_path = vfs_join(SHORTCUTS_DATA, target_hash_name)
@@ -387,7 +555,9 @@ def import_shortcuts(files: Sequence[ImportFile], target_skin: str, ui: KodiUI) 
     return backup_dir
 
 
-def import_generated_include(include_path: Path, ui: KodiUI) -> str:
+def import_generated_include(
+    include_path: Path, video_rewrite: Optional[VideoAddonRewrite], ui: KodiUI
+) -> str:
     skin_include_dir = "special://skin/1080i/"
     target = vfs_join(skin_include_dir, INCLUDE_NAME)
     stamp = time.strftime("%Y%m%d-%H%M%S")
@@ -397,9 +567,39 @@ def import_generated_include(include_path: Path, ui: KodiUI) -> str:
     if vfs_exists(target):
         copy_vfs(target, vfs_join(backup_dir, INCLUDE_NAME))
         delete_vfs(target)
-    copy_vfs(str(include_path), target)
+    copy_import_file(include_path, target, video_rewrite)
     ui.log("Copied generated include to active skin")
     return backup_dir
+
+
+def copy_import_file(
+    source_path: Path, dest: str, video_rewrite: Optional[VideoAddonRewrite]
+) -> None:
+    if not video_rewrite:
+        copy_vfs(str(source_path), dest)
+        return
+
+    data = source_path.read_bytes()
+    transformed = rewrite_video_addons_in_bytes(data, video_rewrite)
+    write_bytes_vfs(dest, transformed)
+
+
+def rewrite_video_addons_in_bytes(data: bytes, video_rewrite: VideoAddonRewrite) -> bytes:
+    text = data.decode("utf-8-sig", "replace")
+    rewritten = rewrite_video_addons_in_text(text, video_rewrite)
+    return rewritten.encode("utf-8")
+
+
+def rewrite_video_addons_in_text(text: str, video_rewrite: VideoAddonRewrite) -> str:
+    source_ids = set(video_rewrite.source_ids)
+
+    def replace(match: re.Match[str]) -> str:
+        addon_id = match.group(1)
+        if addon_id in source_ids:
+            return "plugin://{}".format(video_rewrite.target_id)
+        return match.group(0)
+
+    return PLUGIN_VIDEO_RE.sub(replace, text)
 
 
 def resolve_pcloud_download_url(public_link: str) -> str:
@@ -644,6 +844,15 @@ def copy_vfs(source: str, dest: str) -> None:
     dest_path = translate_path(dest)
     dest_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(str(source_path), str(dest_path))
+
+
+def write_bytes_vfs(dest: str, data: bytes) -> None:
+    parent = posixpath.dirname(dest)
+    if parent:
+        ensure_vfs_dir(parent)
+    dest_path = translate_path(dest)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    dest_path.write_bytes(data)
 
 
 def delete_vfs(path: str) -> None:
