@@ -1,8 +1,26 @@
+[COLOR dodgerblue][B]Version 2.0.80[/B][/COLOR]
+- Refresh the active container after manual source-list cancel cleanup so Kodi's temporary watched overlay is cleared from the GUI.
+- Limit relaxed TorBox title matching to cloud storage rows; AIOStreams and TorBox Search Usenet rows keep the stricter title/year filter regardless of the TorBox cloud title-filter setting.
+- Use AIOStreams search metadata as NZB lookup only and resolve TorBox Usenet Search through the local TorBox account; remove the direct TorBox Search API fallback.
+- Default the AIOStreams TorBox Usenet Search bridge to Midnight's search-enabled public instance, while keeping the endpoint editable.
+
+[COLOR dodgerblue][B]Version 2.0.79[/B][/COLOR]
+- Re-apply the saved Kodi watch/progress state after manual source-list cancel cleanup to avoid delayed dummy-playback writes.
+
+[COLOR dodgerblue][B]Version 2.0.78[/B][/COLOR]
+- Preserve existing Kodi watch/progress state when cancelling the manual source list workaround.
+
+[COLOR dodgerblue][B]Version 2.0.77[/B][/COLOR]
+- Prevent Kodi's generic Playback Failed dialog when backing out of the manual source list without selecting a source.
+
+[COLOR dodgerblue][B]Version 2.0.76[/B][/COLOR]
+- Trust ID-matched AIOStreams TorBox Usenet Search rows so official prefix text in release names does not hide valid cached results.
+
 [COLOR dodgerblue][B]Version 2.0.75[/B][/COLOR]
 - Let the no-results TorBox Usenet Search retry bypass the normal movie/TV account toggles, so those toggles only control ordinary scrapes.
 
 [COLOR dodgerblue][B]Version 2.0.74[/B][/COLOR]
-- Add optional AIOStreams manifest support for TorBox Usenet Search cached streams, with direct TorBox Search API fallback when unset.
+- Add optional AIOStreams manifest support for TorBox Usenet Search cached streams.
 
 [COLOR dodgerblue][B]Version 2.0.73[/B][/COLOR]
 - Strip superscript footnote markers from subtitle comments before selector matching.

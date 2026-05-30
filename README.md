@@ -88,6 +88,12 @@ Important packaging note:
 - treat `zips/`, `addons.xml`, and `addons.xml.md5` as generated output
 - when these addon source trees change, regenerate the matching package output
   and repo metadata before publish/install testing
+- test and main must never advertise the same version for the same addon id
+- because the Android box has both test and main repos installed, production
+  `kodirepo` must always publish the promoted addon under a strictly higher
+  version than this test repo
+- usual pattern: test ships version `N`, main ships the promoted build as
+  version `N+1` or higher
 
 ## FenLightAM Auth Handover - 2026-05-06
 
