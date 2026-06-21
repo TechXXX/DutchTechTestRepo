@@ -1,4 +1,4 @@
-<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.80">
+<addon id="plugin.video.fenlight.patched" name="Fen Light Patched" provider-name="DutchTech" version="2.0.81">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -19,7 +19,10 @@
             <icon>resources/media/baslite_icon_blue.png</icon>
             <fanart>resources/media/fenlight_fanart2.jpg</fanart>
         </assets>
-        <news>[v2.0.80]:
+        <news>[v2.0.81]:
+  * Guard AIOStreams non-JSON responses, prefer TMDb-to-IMDb fallback IDs, preserve OpenSubtitles file names for selector matching, and migrate the old ElfHosted AIOStreams URL to Midnight.
+
+[v2.0.80]:
   * Refresh the active container after manual source-list cancel cleanup so Kodi's temporary watched overlay is cleared from the GUI.
   * Limit relaxed TorBox title matching to cloud storage rows; AIOStreams and TorBox Search Usenet rows keep the stricter title/year filter regardless of the TorBox cloud title-filter setting.
   * Use AIOStreams search metadata as NZB lookup only and resolve TorBox Usenet Search through the local TorBox account; remove the direct TorBox Search API fallback.
